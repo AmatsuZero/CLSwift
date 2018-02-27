@@ -160,10 +160,15 @@ public struct CLDeviceTypes: OptionSet {
     public static let ACCELERATOR = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_ACCELERATOR)
     public static let CUSTOM = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_CUSTOM)
     public static let DEFAULT = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_DEFAULT)
-    public static let ALL = CLDeviceTypes(rawValue: Int32(CL_DEVICE_TYPE_ALL))
+    public static let ALL = CLDeviceTypes(rawValue: 101)
 
     public var value: cl_device_type {
-        return cl_device_type(rawValue)
+        switch self {
+        case .ALL:
+            return cl_device_type(CL_DEVICE_TYPE_ALL)
+        default:
+            return cl_device_type(rawValue)
+        }
     }
 
     public init(rawValue: Int32) {
