@@ -9,12 +9,13 @@
 import XCTest
 @testable import CLSwift
 
-class CLSwiftTests: XCTestCase {
+class CLClassesTests: XCTestCase {
 
     var clPlatform: CLPlatform?
     var clDevice: CLDevice?
     var platform: OpaquePointer?
     var device: OpaquePointer?
+    var context: CLContext?
     
     override func setUp() {
         super.setUp()
@@ -30,6 +31,8 @@ class CLSwiftTests: XCTestCase {
             return XCTFail("没有得到设备")
         }
         device = devices.first!
+        context = try? CLContext(devices: devices)
+        XCTAssertNotNil(context?.context, "未能创建上下文")
     }
     
     override func tearDown() {

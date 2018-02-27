@@ -54,14 +54,18 @@ public final class CLPlatform {
 
     let platforms: [cl_platform_id?]
 
-    init(num_entries: cl_uint = 1) throws {
-        var num_platforms: cl_uint = 0
+    init(num_entries: cl_uint = 0) throws {
+        var numEntries = num_entries
+        var num_platforms = numEntries
         let code = clGetPlatformIDs(num_entries, nil, &num_platforms)
         guard code == CL_SUCCESS else {
             throw platformError(code)
         }
-        var platforms: [cl_platform_id?] = Array(repeating: nil, count: Int(num_platforms))
-        clGetPlatformIDs(num_platforms, &platforms, nil)
+        if num_entries == 0 {
+            numEntries = num_platforms
+        }
+        var platforms: [cl_platform_id?] = Array(repeating: nil, count: Int(numEntries))
+        clGetPlatformIDs(numEntries, &platforms, nil)
         self.platforms = platforms
     }
 

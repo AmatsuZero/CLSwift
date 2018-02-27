@@ -23,7 +23,7 @@
 		2186345A2045413000257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
 		2186345C2045500F00257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
 		218634952045710300257E34 /* CLSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; };
-		2186349A2045710300257E34 /* CLSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634992045710300257E34 /* CLSwiftTests.swift */; };
+		2186349A2045710300257E34 /* CLClassesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634992045710300257E34 /* CLClassesTests.swift */; };
 		2186349C2045710300257E34 /* CLSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2186348E2045710300257E34 /* CLSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		218634A32045711800257E34 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2150AF6A20402C4E00BCAE24 /* OpenCL.framework */; };
 		218634AF204595B800257E34 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634AE204595B800257E34 /* AppDelegate.swift */; };
@@ -100,7 +100,7 @@
 		2186348E2045710300257E34 /* CLSwift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CLSwift.h; sourceTree = "<group>"; };
 		2186348F2045710300257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634942045710300257E34 /* CLSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CLSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		218634992045710300257E34 /* CLSwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLSwiftTests.swift; sourceTree = "<group>"; };
+		218634992045710300257E34 /* CLClassesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLClassesTests.swift; sourceTree = "<group>"; };
 		2186349B2045710300257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634AC204595B800257E34 /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		218634AE204595B800257E34 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -234,7 +234,7 @@
 		218634982045710300257E34 /* CLSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
-				218634992045710300257E34 /* CLSwiftTests.swift */,
+				218634992045710300257E34 /* CLClassesTests.swift */,
 				2186349B2045710300257E34 /* Info.plist */,
 			);
 			path = CLSwiftTests;
@@ -471,7 +471,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2186349A2045710300257E34 /* CLSwiftTests.swift in Sources */,
+				2186349A2045710300257E34 /* CLClassesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

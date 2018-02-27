@@ -40,7 +40,6 @@ private func createContextCallBack(erroInfo: UnsafePointer<Int8>?,
 }
 
 public final class CLContext {
-
     var context: cl_context!
 
     public init(contextProperties props: [cl_context_properties]? = nil,
@@ -73,4 +72,8 @@ public final class CLContext {
     deinit {
         clReleaseContext(context)
     }
+}
+
+extension cl_context {
+    
 }

@@ -153,26 +153,23 @@ private let deviceError: (cl_int) -> NSError = { errType -> NSError in
     return NSError(domain: "com.daubert.OpenCL.Device", code: Int(errType), userInfo: [NSLocalizedDescriptionKey: message])
 }
 
-public struct CLDeviceTypes: OptionSet {
-    public let rawValue: Int32
-    public static let CPU = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_CPU)
-    public static let GPU = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_GPU)
-    public static let ACCELERATOR = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_ACCELERATOR)
-    public static let CUSTOM = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_CUSTOM)
-    public static let DEFAULT = CLDeviceTypes(rawValue: CL_DEVICE_TYPE_DEFAULT)
-    public static let ALL = CLDeviceTypes(rawValue: 101)
+public enum CLDeviceTypes {
+    case CPU
+    case GPU
+    case ACCELERATOR
+    case CUSTOM
+    case DEFAULT
+    case ALL
 
     public var value: cl_device_type {
         switch self {
-        case .ALL:
-            return cl_device_type(CL_DEVICE_TYPE_ALL)
-        default:
-            return cl_device_type(rawValue)
+        case .CPU: return cl_device_type(CL_DEVICE_TYPE_CPU)
+        case .GPU: return cl_device_type(CL_DEVICE_TYPE_GPU)
+        case .ACCELERATOR: return cl_device_type(CL_DEVICE_TYPE_ACCELERATOR)
+        case .CUSTOM: return cl_device_type(CL_DEVICE_TYPE_CUSTOM)
+        case .DEFAULT: return cl_device_type(CL_DEVICE_TYPE_DEFAULT)
+        case .ALL: return cl_device_type(CL_DEVICE_TYPE_ALL)
         }
-    }
-
-    public init(rawValue: Int32) {
-        self.rawValue = rawValue
     }
 }
 
@@ -182,21 +179,25 @@ public final class CLDevice {
     let devices: [cl_device_id?]
 
     public init(platform: cl_platform_id?,
-                num_entries: cl_uint = 1,
+                num_entries: cl_uint = 0,
                 type: CLDeviceTypes = .ALL) throws {
-        var devicesNum: cl_uint = 1
+        var devicesNum = num_entries
+        var numEntries = num_entries
         // 获取设备数量
         let code: cl_int = clGetDeviceIDs(platform,
-                                          cl_device_type(type.rawValue),
+                                          type.value,
                                           num_entries,
                                           nil,
                                           &devicesNum)
         guard code == CL_SUCCESS else {
             throw deviceError(code)
         }
+        if num_entries == 0 {
+            numEntries = devicesNum
+        }
         // 获取设备
-        var devices:[cl_device_id?] = Array(repeating: nil, count: Int(devicesNum))
-        clGetDeviceIDs(platform, cl_device_type(type.rawValue), num_entries, &devices, nil)
+        var devices:[cl_device_id?] = Array(repeating: nil, count: Int(numEntries))
+        clGetDeviceIDs(platform, type.value, numEntries, &devices, nil)
         self.devices = devices
     }
 
