@@ -17,3 +17,8 @@ internal func iterateEnum<T: Hashable>(_: T.Type) -> AnyIterator<T> {
         return next
     }
 }
+
+protocol CLInfoProtocol {
+    associatedtype valueType
+    var value: valueType { get }
+}

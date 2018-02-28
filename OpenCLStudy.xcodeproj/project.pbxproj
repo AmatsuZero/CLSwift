@@ -10,6 +10,7 @@
 		210811D8203EFF2400B54879 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210811D7203EFF2400B54879 /* main.swift */; };
 		210811DF203F008300B54879 /* matvec.cl in Sources */ = {isa = PBXBuildFile; fileRef = 210811DE203F008200B54879 /* matvec.cl */; };
 		210811E2203F00F700B54879 /* matvec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210811E1203F00F700B54879 /* matvec.swift */; };
+		211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A8826204661AD00591C08 /* CLOranganizer.swift */; };
 		2150AF6820400A0A00BCAE24 /* platform_ext_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */; };
 		2150AF6B20402C4E00BCAE24 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2150AF6A20402C4E00BCAE24 /* OpenCL.framework */; };
 		2150AF6D2040335400BCAE24 /* device_ext_test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6C2040335400BCAE24 /* device_ext_test.swift */; };
@@ -37,6 +38,8 @@
 		218634C32045960300257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
 		218634C42045960300257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
 		218634C62045AAE600257E34 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634C52045AAE600257E34 /* Notifications.swift */; };
+		21BA4A0420464FB1002F0D92 /* CLDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */; };
+		633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FAE3E561A94C099828361 /* CLPlatformInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,6 +87,7 @@
 		210811D7203EFF2400B54879 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		210811DE203F008200B54879 /* matvec.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = matvec.cl; sourceTree = "<group>"; };
 		210811E1203F00F700B54879 /* matvec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = matvec.swift; sourceTree = "<group>"; };
+		211A8826204661AD00591C08 /* CLOranganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLOranganizer.swift; sourceTree = "<group>"; };
 		2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = platform_ext_text.swift; sourceTree = "<group>"; };
 		2150AF6A20402C4E00BCAE24 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		2150AF6C2040335400BCAE24 /* device_ext_test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = device_ext_test.swift; sourceTree = "<group>"; };
@@ -110,6 +114,8 @@
 		218634B7204595BB00257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		218634C52045AAE600257E34 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDeviceInfo.swift; sourceTree = "<group>"; };
+		633FAE3E561A94C099828361 /* CLPlatformInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLPlatformInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -226,6 +232,7 @@
 				218634A52045714100257E34 /* CLClasses */,
 				218634A42045713500257E34 /* Extensions */,
 				2186348E2045710300257E34 /* CLSwift.h */,
+				211A8826204661AD00591C08 /* CLOranganizer.swift */,
 				2186348F2045710300257E34 /* Info.plist */,
 			);
 			path = CLSwift;
@@ -255,6 +262,8 @@
 				2186345520450D8B00257E34 /* CLDevice.swift */,
 				2186345720451D1800257E34 /* CLPlatform.swift */,
 				2186345B2045500F00257E34 /* CLContext.swift */,
+				633FAE3E561A94C099828361 /* CLPlatformInfo.swift */,
+				21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -462,8 +471,11 @@
 				218634C62045AAE600257E34 /* Notifications.swift in Sources */,
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
+				21BA4A0420464FB1002F0D92 /* CLDeviceInfo.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
+				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
+				633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

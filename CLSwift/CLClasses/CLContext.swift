@@ -56,18 +56,18 @@ public final class CLContext {
         }
     }
 
-    public init(contextProperties props:[cl_context_properties]? = nil,
-                deviceType: CLDeviceTypes) throws {
-        var errCode: cl_int = 0
-        context = clCreateContextFromType(props,
-                deviceType.value,
-                createContextCallBack,
-                nil,
-                &errCode)
-        guard errCode == CL_SUCCESS else {
-            throw contextError(errCode)
-        }
-    }
+//    public init(contextProperties props:[cl_context_properties]? = nil,
+//                deviceType: CLDeviceTypes) throws {
+//        var errCode: cl_int = 0
+//        context = clCreateContextFromType(props,
+//                deviceType.value,
+//                createContextCallBack,
+//                nil,
+//                &errCode)
+//        guard errCode == CL_SUCCESS else {
+//            throw contextError(errCode)
+//        }
+//    }
 
     deinit {
         clReleaseContext(context)

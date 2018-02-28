@@ -9,35 +9,7 @@
 import Foundation
 import OpenCL
 
-public enum CLPlatformInfoTypes: String {
-
-    case PROFILE = "profile"
-    case VERSION = "version"
-    case NAME = "name"
-    case VENDOR = "vendor"
-    case EXTENSIONS = "extension"
-    
-    var typeCode: Int32 {
-        switch self {
-        case .PROFILE:
-            return CL_PLATFORM_PROFILE
-        case .VERSION:
-            return CL_PLATFORM_VERSION
-        case .NAME:
-            return CL_PLATFORM_NAME
-        case .VENDOR:
-            return CL_PLATFORM_VENDOR
-        case .EXTENSIONS:
-            return CL_PLATFORM_EXTENSIONS
-        }
-    }
-
-    var value: cl_platform_info {
-        return cl_platform_info(self.typeCode)
-    }
-}
-
-private let platformError: (cl_int) -> NSError = { errType -> NSError in
+internal let platformError: (cl_int) -> NSError = { errType -> NSError in
     var message = ""
     switch errType {
     case CL_INVALID_VALUE:
@@ -52,79 +24,45 @@ private let platformError: (cl_int) -> NSError = { errType -> NSError in
 
 public final class CLPlatform {
 
-    let platforms: [cl_platform_id?]
+    /// 平台信息类型
+    private let types: [CLPlatformInfoType]
+    /// 平台ID
+    internal let platformId: cl_platform_id?
+    /// 平台信息
+    public lazy var info: CLPlatformInfo? = {
+        return try? CLPlatformInfo(platform: platformId, infoTypes: types)
+    }()
 
-    init(num_entries: cl_uint = 0) throws {
-        var numEntries = num_entries
-        var num_platforms = numEntries
-        let code = clGetPlatformIDs(num_entries, nil, &num_platforms)
-        guard code == CL_SUCCESS else {
-            throw platformError(code)
-        }
-        if num_entries == 0 {
-            numEntries = num_platforms
-        }
-        var platforms: [cl_platform_id?] = Array(repeating: nil, count: Int(numEntries))
-        clGetPlatformIDs(numEntries, &platforms, nil)
-        self.platforms = platforms
+    init(platformId: cl_platform_id?,
+         platfromInfoTypes: [CLPlatformInfoType] = CLPlatformInfoType.ALL) {
+        types = platfromInfoTypes
+        self.platformId = platformId
     }
 
-    class func platFormInfo(platform: cl_platform_id?, infoType: Int32) throws -> Any {
-        var size = 0
-        let code =  clGetPlatformInfo(platform,
-                                      cl_platform_info(infoType),
-                                      Int.max,
-                                      nil,
-                                      &size)
-        guard code == CL_SUCCESS else {
-            throw platformError(code)
+    public func devices(num_entries: cl_uint = 0,
+                        types: [CLDeviceType] = CLDeviceType.ALL,
+                        infoTyps: [CLDeviceInfoType]) throws -> [CLDevice] {
+        var devices = [cl_device_id?]()
+        for type in types {
+            var devicesNum = num_entries
+            var numEntries = num_entries
+            // 获取设备数量
+            let code: cl_int = clGetDeviceIDs(platformId,
+                                              type.value,
+                                              num_entries,
+                                              nil,
+                                              &devicesNum)
+            guard code == CL_SUCCESS else {
+                throw deviceError(code)
+            }
+            if num_entries == 0 {
+                numEntries = devicesNum
+            }
+            // 获取设备
+            var devicesIds:[cl_device_id?] = Array(repeating: nil, count: Int(numEntries))
+            clGetDeviceIDs(platformId, type.value, numEntries, &devicesIds, nil)
+            devices.append(contentsOf: devicesIds)
         }
-        var infoBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: size)
-        defer {
-            infoBuffer.deallocate(capacity: size)
-        }
-        clGetPlatformInfo(platform, cl_platform_info(infoType), size, infoBuffer, nil)
-        let info = String(cString: infoBuffer)
-        switch infoType {
-        case CL_PLATFORM_EXTENSIONS:
-            return info.components(separatedBy: " ").filter { !$0.isEmpty }
-        default:
-            return info
-        }
-    }
-}
-
-extension cl_platform_id {
-
-    public func platformInfo(infoType: CLPlatformInfoTypes) throws -> Any {
-        var size = 0
-        let code =  clGetPlatformInfo(self,
-                                      infoType.value,
-                                      Int.max,
-                                      nil,
-                                      &size)
-        guard code == CL_SUCCESS else {
-            throw platformError(code)
-        }
-        var infoBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: size)
-        defer {
-            infoBuffer.deallocate(capacity: size)
-        }
-        clGetPlatformInfo(self, infoType.value, size, infoBuffer, nil)
-        let info = String(cString: infoBuffer)
-        switch infoType.typeCode {
-        case CL_PLATFORM_EXTENSIONS:
-            return info.components(separatedBy: " ").filter { !$0.isEmpty }
-        default:
-            return info
-        }
-    }
-
-    func allPlatformInfo() throws -> [String: Any] {
-        var infos = [String: Any]()
-        for type in iterateEnum(CLPlatformInfoTypes.self) {
-            infos[type.rawValue] = try platformInfo(infoType: type)
-        }
-        return infos
+        return devices.map { CLDevice(deviceId: $0, infoTypes: infoTyps) }
     }
 }

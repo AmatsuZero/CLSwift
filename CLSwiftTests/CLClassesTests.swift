@@ -11,28 +11,11 @@ import XCTest
 
 class CLClassesTests: XCTestCase {
 
-    var clPlatform: CLPlatform?
-    var clDevice: CLDevice?
-    var platform: OpaquePointer?
-    var device: OpaquePointer?
-    var context: CLContext?
+    var organizer: CLOrganizer!
     
     override func setUp() {
         super.setUp()
-        clPlatform = try? CLPlatform()
-        guard let platforms = clPlatform?.platforms,
-            platforms.count > 0 else {
-            return XCTFail("没有得到平台")
-        }
-        platform = platforms.first!
-        clDevice = try? CLDevice(platform: platform)
-        guard let devices = clDevice?.devices,
-            devices.count > 0 else {
-            return XCTFail("没有得到设备")
-        }
-        device = devices.first!
-        context = try? CLContext(devices: devices)
-        XCTAssertNotNil(context?.context, "未能创建上下文")
+        organizer = try! CLOrganizer()
     }
     
     override func tearDown() {
@@ -40,9 +23,13 @@ class CLClassesTests: XCTestCase {
     }
     
     func testExample() {
-        let platformName = try? platform?.allPlatformInfo()[CLPlatformInfoTypes.NAME.rawValue] as! String
-        XCTAssertNotNil(platformName, "没有获得平台名称")
-        let deviceName = try? device?.allDeviceInfo()[CLDeviceInfoTypes.NAME.rawValue] as! String
-        XCTAssertNotNil(deviceName, "没有获得设备名称")
+        XCTAssert(!organizer.platforms.isEmpty, "没有获得平台")
+        let platform = organizer.platforms.first!
+        XCTAssertNotNil(platform.info!, "没有获得平台信息")
+        let devices = try! platform.devices(types: [.CPU, .GPU],
+                                            infoTyps: [.NAME, .ADDRESS_BITS, .EXTENSIONS, .DEVICE_VENDOR])
+        XCTAssert(!devices.isEmpty, "没有获得设备")
+        let device = devices.first!
+        XCTAssertNotNil(device.info, "没有获得设备信息")
     }
 }
