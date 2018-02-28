@@ -17,7 +17,7 @@ internal let platformError: (cl_int) -> NSError = { errType -> NSError in
     case CL_OUT_OF_HOST_MEMORY:
         message = "there is a failure to allocate resources required by the OpenCL implementation on the host"
     default:
-        message = "Unknow error"
+        message = "Unknown error"
     }
     return NSError(domain: "com.daubert.OpenCL.Platform", code: Int(errType), userInfo: [NSLocalizedDescriptionKey: message])
 }
@@ -25,7 +25,7 @@ internal let platformError: (cl_int) -> NSError = { errType -> NSError in
 public final class CLPlatform {
 
     /// 平台信息类型
-    private let types: [CLPlatformInfoType]
+    public let types: [CLPlatformInfoType]
     /// 平台ID
     internal let platformId: cl_platform_id?
     /// 平台信息
@@ -34,14 +34,14 @@ public final class CLPlatform {
     }()
 
     init(platformId: cl_platform_id?,
-         platfromInfoTypes: [CLPlatformInfoType] = CLPlatformInfoType.ALL) {
-        types = platfromInfoTypes
+         platformInfoTypes: [CLPlatformInfoType] = CLPlatformInfoType.ALL) {
+        types = platformInfoTypes
         self.platformId = platformId
     }
 
     public func devices(num_entries: cl_uint = 0,
                         types: [CLDeviceType] = CLDeviceType.ALL,
-                        infoTyps: [CLDeviceInfoType]) throws -> [CLDevice] {
+                        infoTypes: [CLDeviceInfoType]) throws -> [CLDevice] {
         var devices = [cl_device_id?]()
         for type in types {
             var devicesNum = num_entries
@@ -63,6 +63,10 @@ public final class CLPlatform {
             clGetDeviceIDs(platformId, type.value, numEntries, &devicesIds, nil)
             devices.append(contentsOf: devicesIds)
         }
-        return devices.map { CLDevice(deviceId: $0, infoTypes: infoTyps) }
+        return devices.map { CLDevice(deviceId: $0, infoTypes: infoTypes) }
+    }
+
+    func info(types: [CLPlatformInfoType]) throws -> CLPlatformInfo {
+        return try CLPlatformInfo(platform: platformId, infoTypes: types)
     }
 }

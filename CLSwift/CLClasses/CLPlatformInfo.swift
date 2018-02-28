@@ -27,13 +27,13 @@ public struct CLPlatformInfoType: OptionSet, CLInfoProtocol {
 
 public struct CLPlatformInfo {
 
-    public var profile: String?
-    public var version: String?
-    public var name: String?
-    public var extensions: [String]?
+    public private(set) var profile: String?
+    public private(set) var version: String?
+    public private(set) var name: String?
+    public private(set) var extensions: [String]?
 
     init(platform: cl_platform_id?,
-         infoTypes: [CLPlatformInfoType] = CLPlatformInfoType.ALL) throws {
+         infoTypes: [CLPlatformInfoType]) throws {
         for type in infoTypes {
             var size = 0
             let code =  clGetPlatformInfo(platform,

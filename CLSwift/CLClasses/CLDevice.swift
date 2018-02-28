@@ -37,12 +37,19 @@ public final class CLDevice {
         return try? CLDeviceInfo(device: deviceId, infoTypes: types)
     }()
 
-    let types: [CLDeviceInfoType]
+    public let types: [CLDeviceInfoType]
+    public lazy var deviceType: CLDeviceType? = {
+        return try! CLDeviceInfo(device: deviceId, infoTypes: [.DEVICE_TYPE]).deviceType
+    }()
 
     public init(deviceId: cl_device_id?,
                 infoTypes: [CLDeviceInfoType]) {
         self.deviceId = deviceId
         types = infoTypes
+    }
+
+    func info(types: [CLDeviceInfoType]) throws -> CLDeviceInfo  {
+        return try CLDeviceInfo(device: deviceId, infoTypes: types)
     }
 
     deinit {

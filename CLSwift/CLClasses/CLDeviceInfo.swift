@@ -37,9 +37,10 @@ public struct CLDeviceInfoType: OptionSet, CLInfoProtocol {
     public static let OPENCL_C_VERSION = CLDeviceInfoType(rawValue: CL_DEVICE_OPENCL_C_VERSION)
     public static let ADDRESS_BITS = CLDeviceInfoType(rawValue: CL_DEVICE_ADDRESS_BITS)
     public static let DEVICE_VENDOR = CLDeviceInfoType(rawValue: CL_DEVICE_VENDOR)
-    public static let DEVICE_RPOFILE = CLDeviceInfoType(rawValue: CL_DEVICE_PROFILE)
+    public static let DEVICE_PROFILE = CLDeviceInfoType(rawValue: CL_DEVICE_PROFILE)
     public static let EXTENSIONS = CLDeviceInfoType(rawValue: CL_DEVICE_EXTENSIONS)
     public static let BUILT_IN_KERNELS = CLDeviceInfoType(rawValue: CL_DEVICE_BUILT_IN_KERNELS)
+    public static let DEVICE_TYPE = CLDeviceInfoType(rawValue: CL_DEVICE_TYPE)
 
     public var value: cl_device_info {
         return cl_device_info(rawValue)
@@ -52,26 +53,30 @@ public struct CLDeviceInfoType: OptionSet, CLInfoProtocol {
 
 public struct CLDeviceInfo {
 
-    var addressBits: Int?
-    var name: String?
-    var deviceVersion: String?
-    var deviceVendor: String?
-    var driverVersion: String?
-    var openclVersion: String?
-    var deviceProfile: String?
-    var extensions: [String]?
-    var builtInKernels: [String]?
+    public private(set) var addressBits: UInt32?
+    public private(set) var name: String?
+    public private(set) var deviceVersion: String?
+    public private(set) var deviceVendor: String?
+    public private(set) var driverVersion: String?
+    public private(set) var openclVersion: String?
+    public private(set) var deviceProfile: String?
+    public private(set) var extensions: [String]?
+    public private(set) var builtInKernels: [String]?
+    public private(set) var deviceType: CLDeviceType?
 
     init(device: cl_device_id?,
          infoTypes: [CLDeviceInfoType]) throws {
         for type in infoTypes {
             var actualSize = 0
             // 获取实际大小
-            clGetDeviceInfo(device,
+            let code = clGetDeviceInfo(device,
                             type.value,
                             Int.max,
                             nil,
                             &actualSize)
+            guard code == CL_SUCCESS else {
+                throw deviceError(code)
+            }
             switch type {
             case .NAME:
                 name = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)
@@ -79,7 +84,7 @@ public struct CLDeviceInfo {
                 deviceVersion = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)
             case .DEVICE_VENDOR:
                 deviceVendor = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)
-            case .DEVICE_RPOFILE:
+            case .DEVICE_PROFILE:
                 deviceProfile = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)
             case .DRIVE_VERSION:
                 driverVersion = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)
@@ -93,6 +98,15 @@ public struct CLDeviceInfo {
                 builtInKernels = try CLDeviceInfo.stringValue(device: device, type: type, size: actualSize)?
                     .components(separatedBy: ";")
                     .filter { !$0.isEmpty }
+            case .ADDRESS_BITS:
+                addressBits = try CLDeviceInfo.integerValue(device: device, type: type, size: actualSize)
+            case .DEVICE_TYPE:
+                var addrDataPtr: cl_int = 0
+                let code = clGetDeviceInfo(device, type.value, actualSize, &addrDataPtr, nil)
+                guard code == CL_SUCCESS else {
+                    throw deviceError(code)
+                }
+                deviceType = CLDeviceType(rawValue: addrDataPtr)
             default:
                 break
             }
@@ -111,6 +125,17 @@ public struct CLDeviceInfo {
             throw deviceError(code)
         }
         return String(cString: charBuffer)
+    }
+
+    public static func integerValue(device: cl_device_id?,
+                                    type: CLDeviceInfoType,
+                                    size actualSize: Int) throws -> cl_uint {
+        var addrDataPtr: cl_uint = 0
+        let code = clGetDeviceInfo(device, type.value, actualSize, &addrDataPtr, nil)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        return addrDataPtr
     }
 }
 

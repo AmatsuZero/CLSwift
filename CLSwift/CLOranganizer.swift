@@ -15,7 +15,7 @@ public final class CLOrganizer {
     let platformInfoTypes: [CLPlatformInfoType]
     public lazy var platforms: [CLPlatform] = {
         return platform_ids
-            .map { CLPlatform(platformId: $0, platfromInfoTypes: platformInfoTypes) }
+            .map { CLPlatform(platformId: $0, platformInfoTypes: platformInfoTypes) }
     }()
     
     public init(num_entries: cl_uint = 0,

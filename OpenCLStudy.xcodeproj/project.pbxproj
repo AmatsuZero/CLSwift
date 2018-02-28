@@ -40,6 +40,7 @@
 		218634C62045AAE600257E34 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634C52045AAE600257E34 /* Notifications.swift */; };
 		21BA4A0420464FB1002F0D92 /* CLDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */; };
 		633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FAE3E561A94C099828361 /* CLPlatformInfo.swift */; };
+		633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +116,7 @@
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		218634C52045AAE600257E34 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDeviceInfo.swift; sourceTree = "<group>"; };
+		633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLContextInfo.swift; sourceTree = "<group>"; };
 		633FAE3E561A94C099828361 /* CLPlatformInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLPlatformInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -264,6 +266,7 @@
 				2186345B2045500F00257E34 /* CLContext.swift */,
 				633FAE3E561A94C099828361 /* CLPlatformInfo.swift */,
 				21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */,
+				633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -476,6 +479,7 @@
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */,
+				633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
