@@ -6,7 +6,7 @@
 import Foundation
 import OpenCL
 
-public struct CLPlatformInfoType: OptionSet, CLInfoProtocol {
+public struct CLPlatformInfoType: OptionSet, CLInfoProtocol, Hashable {
 
     typealias valueType = cl_platform_info
     public let rawValue: Int32
@@ -14,7 +14,7 @@ public struct CLPlatformInfoType: OptionSet, CLInfoProtocol {
     public static let VERSION = CLPlatformInfoType(rawValue: CL_PLATFORM_VERSION)
     public static let NAME = CLPlatformInfoType(rawValue: CL_PLATFORM_NAME)
     public static let EXTENSIONS = CLPlatformInfoType(rawValue: CL_PLATFORM_EXTENSIONS)
-    public static let ALL: [CLPlatformInfoType] = [.PROFILE, .VERSION, .NAME, .EXTENSIONS]
+    public static let ALL: Set<CLPlatformInfoType> = [.PROFILE, .VERSION, .NAME, .EXTENSIONS]
     
     public init(rawValue: Int32) {
         self.rawValue = rawValue
@@ -33,7 +33,7 @@ public struct CLPlatformInfo {
     public private(set) var extensions: [String]?
 
     init(platform: cl_platform_id?,
-         infoTypes: [CLPlatformInfoType]) throws {
+         infoTypes: Set<CLPlatformInfoType> = []) throws {
         for type in infoTypes {
             var size = 0
             let code =  clGetPlatformInfo(platform,

@@ -58,7 +58,7 @@ internal func createContextCallBack(errorInfo: UnsafePointer<Int8>?,
 
 public final class CLContext {
 
-    private let context: cl_context!
+    internal let context: cl_context!
     public let info: CLContextInfo
 
     public init(contextProperties props: [cl_context_properties]?,

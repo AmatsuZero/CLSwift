@@ -19,29 +19,34 @@ internal let platformError: (cl_int) -> NSError = { errType -> NSError in
     default:
         message = "Unknown error"
     }
-    return NSError(domain: "com.daubert.OpenCL.Platform", code: Int(errType), userInfo: [NSLocalizedDescriptionKey: message])
+    return NSError(domain: "com.daubert.OpenCL.Platform",
+                   code: Int(errType),
+                   userInfo: [NSLocalizedDescriptionKey: message])
 }
 
 public final class CLPlatform {
 
     /// 平台信息类型
-    public let types: [CLPlatformInfoType]
+    public let types: Set<CLPlatformInfoType>
     /// 平台ID
     internal let platformId: cl_platform_id?
     /// 平台信息
     public lazy var info: CLPlatformInfo? = {
+        guard !types.isEmpty else {
+            return nil
+        }
         return try? CLPlatformInfo(platform: platformId, infoTypes: types)
     }()
 
     init(platformId: cl_platform_id?,
-         platformInfoTypes: [CLPlatformInfoType] = CLPlatformInfoType.ALL) {
+         platformInfoTypes: Set<CLPlatformInfoType> = CLPlatformInfoType.ALL) {
         types = platformInfoTypes
         self.platformId = platformId
     }
 
-    public func devices(num_entries: cl_uint = 0,
-                        types: [CLDeviceType] = CLDeviceType.ALL,
-                        infoTypes: [CLDeviceInfoType]) throws -> [CLDevice] {
+    public func devices(num_entries: UInt32 = 0,
+                        types: Set<CLDeviceType>,
+                        infoTypes: Set<CLDeviceInfoType>) throws -> [CLDevice] {
         var devices = [cl_device_id?]()
         for type in types {
             var devicesNum = num_entries
@@ -66,7 +71,7 @@ public final class CLPlatform {
         return devices.map { CLDevice(deviceId: $0, infoTypes: infoTypes) }
     }
 
-    func info(types: [CLPlatformInfoType]) throws -> CLPlatformInfo {
-        return try CLPlatformInfo(platform: platformId, infoTypes: types)
+    subscript(_ types: Set<CLPlatformInfoType>) -> CLPlatformInfo? {
+        return try? CLPlatformInfo(platform: platformId, infoTypes: types)
     }
 }

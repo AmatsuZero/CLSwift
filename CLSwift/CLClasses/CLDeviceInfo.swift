@@ -9,7 +9,7 @@
 import Foundation
 import OpenCL
 
-public struct CLDeviceType: OptionSet, CLInfoProtocol {
+public struct CLDeviceType: OptionSet, CLInfoProtocol, Hashable {
 
     public let rawValue: Int32
     public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)
@@ -17,7 +17,7 @@ public struct CLDeviceType: OptionSet, CLInfoProtocol {
     public static let ACCELERATOR = CLDeviceType(rawValue: CL_DEVICE_TYPE_ACCELERATOR)
     public static let CUSTOM = CLDeviceType(rawValue: CL_DEVICE_TYPE_CUSTOM)
     public static let DEFAULT = CLDeviceType(rawValue: CL_DEVICE_TYPE_DEFAULT)
-    public static let ALL = [.CPU, .GPU, .ACCELERATOR, CUSTOM, DEFAULT]
+    public static let ALL: Set<CLDeviceType> = [.CPU, .GPU, .ACCELERATOR, CUSTOM, DEFAULT]
 
     public var value: cl_device_type {
         return cl_device_type(rawValue)
@@ -28,7 +28,7 @@ public struct CLDeviceType: OptionSet, CLInfoProtocol {
     }
 }
 
-public struct CLDeviceInfoType: OptionSet, CLInfoProtocol {
+public struct CLDeviceInfoType: OptionSet, CLInfoProtocol, Hashable {
 
     public let rawValue: Int32
     public static let NAME = CLDeviceInfoType(rawValue: CL_DEVICE_NAME)
@@ -41,6 +41,7 @@ public struct CLDeviceInfoType: OptionSet, CLInfoProtocol {
     public static let EXTENSIONS = CLDeviceInfoType(rawValue: CL_DEVICE_EXTENSIONS)
     public static let BUILT_IN_KERNELS = CLDeviceInfoType(rawValue: CL_DEVICE_BUILT_IN_KERNELS)
     public static let DEVICE_TYPE = CLDeviceInfoType(rawValue: CL_DEVICE_TYPE)
+    public static let COMMONINFO: Set<CLDeviceInfoType> = [.NAME, .ADDRESS_BITS, .EXTENSIONS, .OPENCL_C_VERSION]
 
     public var value: cl_device_info {
         return cl_device_info(rawValue)
@@ -65,7 +66,7 @@ public struct CLDeviceInfo {
     public private(set) var deviceType: CLDeviceType?
 
     init(device: cl_device_id?,
-         infoTypes: [CLDeviceInfoType]) throws {
+         infoTypes: Set<CLDeviceInfoType>) throws {
         for type in infoTypes {
             var actualSize = 0
             // 获取实际大小

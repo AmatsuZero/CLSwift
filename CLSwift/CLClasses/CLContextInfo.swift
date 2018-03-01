@@ -27,7 +27,7 @@ public struct CLContextInfo {
             let count = actualSize/MemoryLayout<cl_device_id>.stride
             var deviceIds: [cl_device_id?] = Array(repeating: nil, count: count)
             clGetContextInfo(ctx, cl_context_info(CL_CONTEXT_DEVICES), actualSize, &deviceIds, nil)
-            self.devices = deviceIds.map { CLDevice(deviceId: $0, infoTypes: []) }
+            self.devices = deviceIds.map { CLDevice(deviceId: $0, infoTypes: CLDeviceInfoType.COMMONINFO) }
         }
     }
 }

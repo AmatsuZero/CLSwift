@@ -27,29 +27,34 @@ internal let deviceError: (cl_int) -> NSError = { errType -> NSError in
     default:
         message = "Unknown error"
     }
-    return NSError(domain: "com.daubert.OpenCL.Device", code: Int(errType), userInfo: [NSLocalizedDescriptionKey: message])
+    return NSError(domain: "com.daubert.OpenCL.Device",
+                   code: Int(errType),
+                   userInfo: [NSLocalizedDescriptionKey: message])
 }
 
 public final class CLDevice {
 
     internal let deviceId: cl_device_id?
     public lazy var info: CLDeviceInfo? = {
+        guard !types.isEmpty else {
+            return nil
+        }
         return try? CLDeviceInfo(device: deviceId, infoTypes: types)
     }()
 
-    public let types: [CLDeviceInfoType]
+    public let types: Set<CLDeviceInfoType>
     public lazy var deviceType: CLDeviceType? = {
         return try! CLDeviceInfo(device: deviceId, infoTypes: [.DEVICE_TYPE]).deviceType
     }()
 
     public init(deviceId: cl_device_id?,
-                infoTypes: [CLDeviceInfoType]) {
+                infoTypes: Set<CLDeviceInfoType>) {
         self.deviceId = deviceId
         types = infoTypes
     }
 
-    func info(types: [CLDeviceInfoType]) throws -> CLDeviceInfo  {
-        return try CLDeviceInfo(device: deviceId, infoTypes: types)
+    subscript(_ types: Set<CLDeviceInfoType>) -> CLDeviceInfo?  {
+        return try? CLDeviceInfo(device: deviceId, infoTypes: types)
     }
 
     deinit {
