@@ -28,7 +28,7 @@ internal let deviceError: (cl_int) -> NSError = { errType -> NSError in
     }
     return NSError(domain: "com.daubert.OpenCL.Device",
                    code: Int(errType),
-                   userInfo: [NSLocalizedDescriptionKey: message])
+                   userInfo: [NSLocalizedFailureReasonErrorKey: message])
 }
 
 public final class CLDevice {
@@ -58,17 +58,17 @@ public final class CLDevice {
     }()
     public private(set) lazy var extensions: [String]? = {
         return try? stringValue(CL_DEVICE_EXTENSIONS)
-                .components(separatedBy: " ")
-                .filter {
-                    !$0.isEmpty
-                }
+            .components(separatedBy: " ")
+            .filter {
+                !$0.isEmpty
+        }
     }()
     public private(set) lazy var builtInKernels: [String]? = {
         return try? stringValue(CL_DEVICE_BUILT_IN_KERNELS)
-                .components(separatedBy: ";")
-                .filter {
-                    !$0.isEmpty
-                }
+            .components(separatedBy: ";")
+            .filter {
+                !$0.isEmpty
+        }
     }()
     public private(set) lazy var type: CLDeviceType? = {
         return try? typeValue()
@@ -100,11 +100,11 @@ public final class CLDevice {
 
     fileprivate func stringValue(_ type: Int32) throws -> String {
         var actualSize = 0
-        var code = clGetDeviceInfo(deviceId,
-                cl_device_info(type),
-                Int.max,
-                nil,
-                &actualSize)
+        let code = clGetDeviceInfo(deviceId,
+                                   cl_device_info(type),
+                                   Int.max,
+                                   nil,
+                                   &actualSize)
         guard code == CL_SUCCESS else {
             throw deviceError(code)
         }
@@ -113,45 +113,36 @@ public final class CLDevice {
             charBuffer.deallocate(capacity: actualSize)
         }
         clGetDeviceInfo(deviceId, cl_device_info(type), actualSize, charBuffer, nil)
-        guard code == CL_SUCCESS else {
-            throw deviceError(code)
-        }
         return String(cString: charBuffer)
     }
 
     fileprivate func integerValue(_ type: Int32) throws -> UInt32 {
         var actualSize = 0
         let code = clGetDeviceInfo(deviceId,
-                cl_device_info(type),
-                Int.max,
-                nil,
-                &actualSize)
+                                   cl_device_info(type),
+                                   Int.max,
+                                   nil,
+                                   &actualSize)
         guard code == CL_SUCCESS else {
             throw deviceError(code)
         }
         var addrDataPtr: cl_uint = 0
         clGetDeviceInfo(deviceId, cl_device_info(type), actualSize, &addrDataPtr, nil)
-        guard code == CL_SUCCESS else {
-            throw deviceError(code)
-        }
         return addrDataPtr
     }
 
     fileprivate func typeValue() throws -> CLDeviceType {
         var actualSize = 0
         let code = clGetDeviceInfo(deviceId,
-                cl_device_info(CL_DEVICE_TYPE),
-                Int.max,
-                nil,
-                &actualSize)
+                                   cl_device_info(CL_DEVICE_TYPE),
+                                   Int.max,
+                                   nil,
+                                   &actualSize)
         guard code == CL_SUCCESS else {
             throw deviceError(code)
         }
         var addrDataPtr: cl_int = 0
         clGetDeviceInfo(deviceId, cl_device_info(CL_DEVICE_TYPE), actualSize, &addrDataPtr, nil)
-        guard code == CL_SUCCESS else {
-            throw deviceError(code)
-        }
         return CLDeviceType(rawValue: addrDataPtr)
     }
 

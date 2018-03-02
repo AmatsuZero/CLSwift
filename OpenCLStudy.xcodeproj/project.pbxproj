@@ -36,8 +36,6 @@
 		218634C22045960300257E34 /* CLPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345720451D1800257E34 /* CLPlatform.swift */; };
 		218634C32045960300257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
 		218634C42045960300257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
-		218634C62045AAE600257E34 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634C52045AAE600257E34 /* Notifications.swift */; };
-		633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,8 +111,6 @@
 		218634B5204595BB00257E34 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		218634B7204595BB00257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
-		218634C52045AAE600257E34 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
-		633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLContextInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -258,7 +254,6 @@
 			isa = PBXGroup;
 			children = (
 				218634592045413000257E34 /* Extensions.swift */,
-				218634C52045AAE600257E34 /* Notifications.swift */,
 				211A882C2046CF3A00591C08 /* StringFileExtenions.swift */,
 			);
 			path = Extensions;
@@ -270,7 +265,6 @@
 				2186345520450D8B00257E34 /* CLDevice.swift */,
 				2186345720451D1800257E34 /* CLPlatform.swift */,
 				2186345B2045500F00257E34 /* CLContext.swift */,
-				633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */,
 				211A88282046CD7000591C08 /* CLProgram.swift */,
 			);
 			path = CLClasses;
@@ -473,7 +467,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				218634C62045AAE600257E34 /* Notifications.swift in Sources */,
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
@@ -481,7 +474,6 @@
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				211A88292046CD7000591C08 /* CLProgram.swift in Sources */,
-				633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

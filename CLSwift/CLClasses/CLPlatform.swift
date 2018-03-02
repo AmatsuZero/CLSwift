@@ -20,7 +20,7 @@ internal let platformError: (cl_int) -> NSError = { errType -> NSError in
     }
     return NSError(domain: "com.daubert.OpenCL.Platform",
                    code: Int(errType),
-                   userInfo: [NSLocalizedDescriptionKey: message])
+                   userInfo: [NSLocalizedFailureReasonErrorKey: message])
 }
 
 public final class CLPlatform {

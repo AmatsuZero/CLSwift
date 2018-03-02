@@ -35,7 +35,9 @@ class CLClassesTests: XCTestCase {
     }
 
     func testContext() {
-        let ctx = try! CLContext(contextProperties: nil, deviceType: .GPU)
+        let ctx = CLContext(deviceType: .GPU) { ret, error in
+            print(error ?? "Unknown")
+        }
         XCTAssertNotNil(ctx, "未能创建上下文")
         let device = ctx.devices?.first!
         XCTAssertNotNil(device, "未能获得设备")
@@ -43,24 +45,38 @@ class CLClassesTests: XCTestCase {
     }
 
     func testBuildProgram() {
-        let ctx = try! CLContext(deviceType: .GPU)
+        let ctx = CLContext(deviceType: .GPU)
         XCTAssertNotNil(ctx, "未能创建上下文")
-        let path = "/Users/modao/Downloads/source_code_mac/Ch2/queue_kernel/blank.cl"
-        XCTAssert(FileManager.default.fileExists(atPath: path), "没有找到文件")
-        let files = [path]
-        var bufferSize = 0
+        let path1 = "/Users/modao/Downloads/source_code_mac/Ch2/program_build/good.cl"
+        let path2 = "/Users/modao/Downloads/source_code_mac/Ch2/program_build/bad.cl"
+        let files = [path1, path2]
+        files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
+        var bufferSize = [Int]()
         var buffer = [UnsafePointer<Int8>?]()
         for file in files {
             if let (size, charBuffer) = try? file.toDataBuffer() {
-                bufferSize += size
+                bufferSize.append(size)
                 buffer.append(charBuffer)
             }
         }
-        let program = try? CLProgram(context: ctx,
-                                     buffer: &buffer,
-                                     size: &bufferSize)
-        XCTAssertNotNil(program, "未能创建Program")
-//        program?.build(options: [.D_NAME(nil), .FiniteMathOnly])
+        guard let program = try? CLProgram(context: ctx,
+                                     buffers: &buffer,
+                                     sizes: &bufferSize) else {
+            XCTFail("未能创建Program")
+            return
+        }
+        XCTAssertNotNil(ctx.devices, "没有找到设备")
+        var ret = false
+        let log = program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _ in
+            ret = isSuccess
+            print(error?.localizedDescription ?? "Unknown")
+        }.first?.log
+        print(log ?? "NO LOG")
+        XCTAssert(!ret, "同名函数应该导致编译失败")
+    }
+
+    func testKernels() {
+
     }
 }
 
