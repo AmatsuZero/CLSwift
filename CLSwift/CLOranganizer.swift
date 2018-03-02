@@ -7,19 +7,19 @@
 //
 
 import Foundation
-import OpenCL
 
 public final class CLOrganizer {
     
     private let platform_ids: [cl_platform_id?]
-    let platformInfoTypes: Set<CLPlatformInfoType>
+
     public lazy var platforms: [CLPlatform] = {
         return platform_ids
-            .map { CLPlatform(platformId: $0, platformInfoTypes: platformInfoTypes) }
+                .map {
+            CLPlatform(platformId: $0)
+        }
     }()
-    
-    public init(num_entries: cl_uint = 0,
-                infoTypes: Set<CLPlatformInfoType> = CLPlatformInfoType.ALL) throws {
+
+    public init(num_entries: cl_uint = 0) throws {
         var numEntries = num_entries
         var num_platforms = numEntries
         let code = clGetPlatformIDs(num_entries, nil, &num_platforms)
@@ -32,7 +32,6 @@ public final class CLOrganizer {
         var platforms: [cl_platform_id?] = Array(repeating: nil, count: Int(numEntries))
         clGetPlatformIDs(numEntries, &platforms, nil)
         platform_ids = platforms
-        self.platformInfoTypes = infoTypes
     }
 
 }

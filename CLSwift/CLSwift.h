@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import <OpenCL/cl.h>
 
 //! Project version number for CLSwift.
 FOUNDATION_EXPORT double CLSwiftVersionNumber;

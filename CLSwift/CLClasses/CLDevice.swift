@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import OpenCL
 
 internal let deviceError: (cl_int) -> NSError = { errType -> NSError in
     var message = ""
@@ -35,26 +34,125 @@ internal let deviceError: (cl_int) -> NSError = { errType -> NSError in
 public final class CLDevice {
 
     internal let deviceId: cl_device_id?
-    public lazy var info: CLDeviceInfo? = {
-        guard !types.isEmpty else {
-            return nil
+    //MARK: 设备信息
+    public private(set) lazy var addressBits: UInt32? = {
+        return try? integerValue(CL_DEVICE_ADDRESS_BITS)
+    }()
+    public private(set) lazy var name: String? = {
+        return try? stringValue(CL_DEVICE_NAME)
+    }()
+    public private(set) lazy var deviceVersion: String? = {
+        return try? stringValue(CL_DEVICE_VERSION)
+    }()
+    public private(set) lazy var vendor: String? = {
+        return try? stringValue(CL_DEVICE_VENDOR)
+    }()
+    public private(set) lazy var driverVersion: String? = {
+        return try? stringValue(CL_DRIVER_VERSION)
+    }()
+    public private(set) lazy var clVersion: String? = {
+        return try? stringValue(CL_DEVICE_OPENCL_C_VERSION)
+    }()
+    public private(set) lazy var profile: String? = {
+        return try? stringValue(CL_DEVICE_PROFILE)
+    }()
+    public private(set) lazy var extensions: [String]? = {
+        return try? stringValue(CL_DEVICE_EXTENSIONS)
+                .components(separatedBy: " ")
+                .filter {
+                    !$0.isEmpty
+                }
+    }()
+    public private(set) lazy var builtInKernels: [String]? = {
+        return try? stringValue(CL_DEVICE_BUILT_IN_KERNELS)
+                .components(separatedBy: ";")
+                .filter {
+                    !$0.isEmpty
+                }
+    }()
+    public private(set) lazy var type: CLDeviceType? = {
+        return try? typeValue()
+    }()
+
+    public struct CLDeviceType: OptionSet, CLInfoProtocol, Hashable {
+        public let rawValue: Int32
+        public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)
+        public static let GPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_GPU)
+        public static let ACCELERATOR = CLDeviceType(rawValue: CL_DEVICE_TYPE_ACCELERATOR)
+        public static let CUSTOM = CLDeviceType(rawValue: CL_DEVICE_TYPE_CUSTOM)
+        public static let DEFAULT = CLDeviceType(rawValue: CL_DEVICE_TYPE_DEFAULT)
+        public static let ALL: Set<CLDeviceType> = [.CPU, .GPU, .ACCELERATOR, CUSTOM, DEFAULT]
+        public var hashValue: Int {
+            return Int(rawValue)
         }
-        return try? CLDeviceInfo(device: deviceId, infoTypes: types)
-    }()
+        public var value: cl_device_type {
+            return cl_device_type(rawValue)
+        }
 
-    public let types: Set<CLDeviceInfoType>
-    public lazy var deviceType: CLDeviceType? = {
-        return try! CLDeviceInfo(device: deviceId, infoTypes: [.DEVICE_TYPE]).deviceType
-    }()
-
-    public init(deviceId: cl_device_id?,
-                infoTypes: Set<CLDeviceInfoType>) {
-        self.deviceId = deviceId
-        types = infoTypes
+        public init(rawValue: Int32) {
+            self.rawValue = rawValue
+        }
     }
 
-    subscript(_ types: Set<CLDeviceInfoType>) -> CLDeviceInfo?  {
-        return try? CLDeviceInfo(device: deviceId, infoTypes: types)
+    public init(deviceId: cl_device_id?) {
+        self.deviceId = deviceId
+    }
+
+    fileprivate func stringValue(_ type: Int32) throws -> String {
+        var actualSize = 0
+        var code = clGetDeviceInfo(deviceId,
+                cl_device_info(type),
+                Int.max,
+                nil,
+                &actualSize)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
+        defer {
+            charBuffer.deallocate(capacity: actualSize)
+        }
+        clGetDeviceInfo(deviceId, cl_device_info(type), actualSize, charBuffer, nil)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        return String(cString: charBuffer)
+    }
+
+    fileprivate func integerValue(_ type: Int32) throws -> UInt32 {
+        var actualSize = 0
+        let code = clGetDeviceInfo(deviceId,
+                cl_device_info(type),
+                Int.max,
+                nil,
+                &actualSize)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        var addrDataPtr: cl_uint = 0
+        clGetDeviceInfo(deviceId, cl_device_info(type), actualSize, &addrDataPtr, nil)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        return addrDataPtr
+    }
+
+    fileprivate func typeValue() throws -> CLDeviceType {
+        var actualSize = 0
+        let code = clGetDeviceInfo(deviceId,
+                cl_device_info(CL_DEVICE_TYPE),
+                Int.max,
+                nil,
+                &actualSize)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        var addrDataPtr: cl_int = 0
+        clGetDeviceInfo(deviceId, cl_device_info(CL_DEVICE_TYPE), actualSize, &addrDataPtr, nil)
+        guard code == CL_SUCCESS else {
+            throw deviceError(code)
+        }
+        return CLDeviceType(rawValue: addrDataPtr)
     }
 
     deinit {

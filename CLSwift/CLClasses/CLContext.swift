@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import OpenCL
 
 internal let contextError: (cl_int) -> NSError = { errType -> NSError in
     var message = ""
@@ -59,9 +58,32 @@ internal func createContextCallBack(errorInfo: UnsafePointer<Int8>?,
 public final class CLContext {
 
     internal let context: cl_context!
-    public let info: CLContextInfo
+    private var _devices: [CLDevice]?
+    private var properties: [cl_context_properties]?
+    public private(set) var devices: [CLDevice]? {
+        set(newDevices) {
+            _devices = newDevices
+        }
+        get {
+            if _devices?.isEmpty == false {
+                return _devices!
+            }
+            var actualSize = 0
+            let code = clGetContextInfo(context, cl_context_info(CL_CONTEXT_DEVICES), Int.max, nil, &actualSize)
+            guard code == CL_SUCCESS, actualSize > 0 else {
+                return nil
+            }
+            let count = actualSize / MemoryLayout<cl_device_id>.stride
+            var deviceIds: [cl_device_id?] = Array(repeating: nil, count: count)
+            clGetContextInfo(context, cl_context_info(CL_CONTEXT_DEVICES), actualSize, &deviceIds, nil)
+            _devices = deviceIds.map {
+                CLDevice(deviceId: $0)
+            }
+            return _devices
+        }
+    }
 
-    public init(contextProperties props: [cl_context_properties]?,
+    public init(contextProperties props: [cl_context_properties]? = nil,
                 devices: [CLDevice]) throws {
         var errCode: cl_int = 0
         context = clCreateContext(props,
@@ -73,13 +95,12 @@ public final class CLContext {
         guard errCode == CL_SUCCESS else {
             throw contextError(errCode)
         }
-        info = try CLContextInfo(context: context,
-                                 devices: devices,
-                                 properties: props)
+        properties = props
+        _devices = devices
     }
 
-    public init(contextProperties props:[cl_context_properties]?,
-                deviceType: CLDeviceType) throws {
+    public init(contextProperties props: [cl_context_properties]? = nil,
+                deviceType: CLDevice.CLDeviceType) throws {
         var errCode: cl_int = 0
         context = clCreateContextFromType(props,
                                           deviceType.value,
@@ -89,8 +110,7 @@ public final class CLContext {
         guard errCode == CL_SUCCESS else {
             throw contextError(errCode)
         }
-        info = try CLContextInfo(context: context,
-                                 properties: props)
+        properties = props
     }
 
     deinit {

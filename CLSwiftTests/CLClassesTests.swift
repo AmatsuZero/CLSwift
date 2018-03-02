@@ -27,35 +27,23 @@ class CLClassesTests: XCTestCase {
     func testExample() {
         XCTAssert(!organizer.platforms.isEmpty, "没有获得平台")
         let platform = organizer.platforms.first!
-        XCTAssertNotNil(platform.info!, "没有获得平台信息")
-        let devices = try! platform.devices(types: [.CPU, .GPU],
-                infoTypes: [.NAME, .ADDRESS_BITS, .EXTENSIONS, .DEVICE_VENDOR])
+        XCTAssertNotNil(platform.name, "没有获得平台名称")
+        let devices = try! platform.devices(types: [.CPU, .GPU])
         XCTAssert(!devices.isEmpty, "没有获得设备")
         let device = devices.first!
-        XCTAssertNotNil(device.info, "没有获得设备信息")
+        XCTAssertNotNil(device.name, "没有获得设备名称")
     }
 
     func testContext() {
         let ctx = try! CLContext(contextProperties: nil, deviceType: .GPU)
         XCTAssertNotNil(ctx, "未能创建上下文")
-        let device = ctx.info.devices!.first!
+        let device = ctx.devices?.first!
         XCTAssertNotNil(device, "未能获得设备")
-        let info = device[[.NAME,
-                           .ADDRESS_BITS,
-                           .DEVICE_VENDOR,
-                           .BUILT_IN_KERNELS,
-                           .OPENCL_C_VERSION,
-                           .EXTENSIONS,
-                           .DEVICE_VERSION,
-                           .DRIVE_VERSION,
-                           .BUILT_IN_KERNELS,
-                           .DEVICE_PROFILE,
-                           .DEVICE_TYPE]]
-        XCTAssertNotNil(info, "未能获取信息")
+        XCTAssertNotNil(device?.name, "未能获取名称")
     }
 
-    func testBuildSingleProgram() {
-        let ctx = try! CLContext(contextProperties: nil, deviceType: .GPU)
+    func testBuildProgram() {
+        let ctx = try! CLContext(deviceType: .GPU)
         XCTAssertNotNil(ctx, "未能创建上下文")
         let path = "/Users/modao/Downloads/source_code_mac/Ch2/queue_kernel/blank.cl"
         XCTAssert(FileManager.default.fileExists(atPath: path), "没有找到文件")
@@ -72,10 +60,7 @@ class CLClassesTests: XCTestCase {
                                      buffer: &buffer,
                                      size: &bufferSize)
         XCTAssertNotNil(program, "未能创建Program")
-        var version = ctx.info.devices?.first?.info?.openclVersion
-        if version == nil {
-            version = ctx.info.devices?.first?[[.OPENCL_C_VERSION]]?.openclVersion
-        }
-        program?.build(options: [.D_NAME(nil), .FiniteMathOnly, .CLVersion(version!)])
+//        program?.build(options: [.D_NAME(nil), .FiniteMathOnly])
     }
 }
+

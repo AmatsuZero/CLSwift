@@ -12,7 +12,6 @@
 		210811E2203F00F700B54879 /* matvec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210811E1203F00F700B54879 /* matvec.swift */; };
 		211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A8826204661AD00591C08 /* CLOranganizer.swift */; };
 		211A88292046CD7000591C08 /* CLProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A88282046CD7000591C08 /* CLProgram.swift */; };
-		211A882B2046CD8A00591C08 /* CLProgramInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A882A2046CD8A00591C08 /* CLProgramInfo.swift */; };
 		211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A882C2046CF3A00591C08 /* StringFileExtenions.swift */; };
 		2150AF6820400A0A00BCAE24 /* platform_ext_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */; };
 		2150AF6B20402C4E00BCAE24 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2150AF6A20402C4E00BCAE24 /* OpenCL.framework */; };
@@ -38,8 +37,6 @@
 		218634C32045960300257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
 		218634C42045960300257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
 		218634C62045AAE600257E34 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634C52045AAE600257E34 /* Notifications.swift */; };
-		21BA4A0420464FB1002F0D92 /* CLDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */; };
-		633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FAE3E561A94C099828361 /* CLPlatformInfo.swift */; };
 		633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */; };
 /* End PBXBuildFile section */
 
@@ -90,7 +87,6 @@
 		210811E1203F00F700B54879 /* matvec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = matvec.swift; sourceTree = "<group>"; };
 		211A8826204661AD00591C08 /* CLOranganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLOranganizer.swift; sourceTree = "<group>"; };
 		211A88282046CD7000591C08 /* CLProgram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLProgram.swift; sourceTree = "<group>"; };
-		211A882A2046CD8A00591C08 /* CLProgramInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLProgramInfo.swift; sourceTree = "<group>"; };
 		211A882C2046CF3A00591C08 /* StringFileExtenions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringFileExtenions.swift; sourceTree = "<group>"; };
 		2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = platform_ext_text.swift; sourceTree = "<group>"; };
 		2150AF6A20402C4E00BCAE24 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -118,9 +114,7 @@
 		218634B7204595BB00257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		218634C52045AAE600257E34 /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
-		21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDeviceInfo.swift; sourceTree = "<group>"; };
 		633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLContextInfo.swift; sourceTree = "<group>"; };
-		633FAE3E561A94C099828361 /* CLPlatformInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CLPlatformInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -276,11 +270,8 @@
 				2186345520450D8B00257E34 /* CLDevice.swift */,
 				2186345720451D1800257E34 /* CLPlatform.swift */,
 				2186345B2045500F00257E34 /* CLContext.swift */,
-				633FAE3E561A94C099828361 /* CLPlatformInfo.swift */,
-				21BA4A0320464FB1002F0D92 /* CLDeviceInfo.swift */,
 				633FA0A6DBF6F7AD2E4E1DEF /* CLContextInfo.swift */,
 				211A88282046CD7000591C08 /* CLProgram.swift */,
-				211A882A2046CD8A00591C08 /* CLProgramInfo.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -485,15 +476,12 @@
 				218634C62045AAE600257E34 /* Notifications.swift in Sources */,
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
-				21BA4A0420464FB1002F0D92 /* CLDeviceInfo.swift in Sources */,
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				211A88292046CD7000591C08 /* CLProgram.swift in Sources */,
-				633FA1884269C155118344CF /* CLPlatformInfo.swift in Sources */,
 				633FAF1F12A49EF9BE43C9FA /* CLContextInfo.swift in Sources */,
-				211A882B2046CD8A00591C08 /* CLProgramInfo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

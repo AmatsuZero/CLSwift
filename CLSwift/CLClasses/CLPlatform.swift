@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import OpenCL
 
 internal let platformError: (cl_int) -> NSError = { errType -> NSError in
     var message = ""
@@ -26,27 +25,31 @@ internal let platformError: (cl_int) -> NSError = { errType -> NSError in
 
 public final class CLPlatform {
 
-    /// 平台信息类型
-    public let types: Set<CLPlatformInfoType>
     /// 平台ID
     internal let platformId: cl_platform_id?
-    /// 平台信息
-    public lazy var info: CLPlatformInfo? = {
-        guard !types.isEmpty else {
-            return nil
-        }
-        return try? CLPlatformInfo(platform: platformId, infoTypes: types)
-    }()
 
-    init(platformId: cl_platform_id?,
-         platformInfoTypes: Set<CLPlatformInfoType> = CLPlatformInfoType.ALL) {
-        types = platformInfoTypes
+    init(platformId: cl_platform_id?) {
         self.platformId = platformId
     }
 
+    //MARK: 平台信息
+    public private(set) lazy var profile: String? = {
+        return try? stringValue(CL_PLATFORM_PROFILE)
+    }()
+    public private(set) lazy var version: String? = {
+        return try? stringValue(CL_PLATFORM_VERSION)
+    }()
+    public private(set) lazy var name: String? = {
+        return try? stringValue(CL_PLATFORM_NAME)
+    }()
+    public private(set) lazy var extensions: [String]? = {
+        return try? stringValue(CL_PLATFORM_EXTENSIONS).components(separatedBy: " ").filter {
+            !$0.isEmpty
+        }
+    }()
+
     public func devices(num_entries: UInt32 = 0,
-                        types: Set<CLDeviceType>,
-                        infoTypes: Set<CLDeviceInfoType>) throws -> [CLDevice] {
+                        types: Set<CLDevice.CLDeviceType>) throws -> [CLDevice] {
         var devices = [cl_device_id?]()
         for type in types {
             var devicesNum = num_entries
@@ -68,10 +71,26 @@ public final class CLPlatform {
             clGetDeviceIDs(platformId, type.value, numEntries, &devicesIds, nil)
             devices.append(contentsOf: devicesIds)
         }
-        return devices.map { CLDevice(deviceId: $0, infoTypes: infoTypes) }
+        return devices.map {
+            CLDevice(deviceId: $0)
+        }
     }
 
-    subscript(_ types: Set<CLPlatformInfoType>) -> CLPlatformInfo? {
-        return try? CLPlatformInfo(platform: platformId, infoTypes: types)
+    fileprivate func stringValue(_ type: Int32) throws -> String {
+        var size = 0
+        let code = clGetPlatformInfo(platformId,
+                cl_platform_info(type),
+                Int.max,
+                nil,
+                &size)
+        guard code == CL_SUCCESS else {
+            throw platformError(code)
+        }
+        var infoBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: size)
+        defer {
+            infoBuffer.deallocate(capacity: size)
+        }
+        clGetPlatformInfo(platformId, cl_platform_info(type), size, infoBuffer, nil)
+        return String(cString: infoBuffer)
     }
 }

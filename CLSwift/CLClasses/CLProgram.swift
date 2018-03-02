@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import OpenCL
 
 internal let programError: (cl_int) -> NSError = { errType -> NSError in
     var message = ""
@@ -46,7 +45,7 @@ public final class CLProgram {
     /// - UnsafeMathOpt: 移除错误建厂来优化运算处理，这回引发不兼容的运算操作
     /// - FiniteMathOnly: 假设所有的结果和参数都是有限的，没有操作会接受和得出无穷量或NaN
     /// - FastRelaxedMath: 将选项UnsafeMathOpt和FastRelaxedMath组合使用
-    public enum CLProgramBuildOption: Hashable {
+    public enum CLProgramBuildOption: Hashable, Equatable {
 
         public var hashValue: Int {
             switch self {
@@ -101,6 +100,10 @@ public final class CLProgram {
             case .FastRelaxedMath: return "-cl-fast-relaxed-math"
             }
         }
+
+        public static func ==(lhs: CLProgramBuildOption, rhs: CLProgramBuildOption) -> Bool {
+            return lhs.hashValue == rhs.hashValue
+        }
     }
 
     /// 从cl文件创建Program对象
@@ -123,8 +126,12 @@ public final class CLProgram {
         }
     }
 
-    func build(options: Set<CLProgramBuildOption>, devices:[CLDevice]) {
-        let optionsString = options.map { $0.string }.reduce("") { $0.appending("\($1) ") }
+    func build(options: Set<CLProgramBuildOption>, devices: [CLDevice]) {
+        let optionsString = options.map {
+            $0.string
+        }.reduce("") {
+            $0.appending("\($1) ")
+        }
         print(optionsString)
     }
 
