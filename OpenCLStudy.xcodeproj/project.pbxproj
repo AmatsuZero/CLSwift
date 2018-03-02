@@ -36,6 +36,8 @@
 		218634C22045960300257E34 /* CLPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345720451D1800257E34 /* CLPlatform.swift */; };
 		218634C32045960300257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
 		218634C42045960300257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
+		218905A92049544600352104 /* CLKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905A82049544600352104 /* CLKernel.swift */; };
+		218905AB204954C100352104 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AA204954C100352104 /* FileDownloader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +113,8 @@
 		218634B5204595BB00257E34 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		218634B7204595BB00257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
+		218905A82049544600352104 /* CLKernel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernel.swift; sourceTree = "<group>"; };
+		218905AA204954C100352104 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +199,7 @@
 		21325FB520484B640018D740 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				218905AA204954C100352104 /* FileDownloader.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -266,6 +271,7 @@
 				2186345720451D1800257E34 /* CLPlatform.swift */,
 				2186345B2045500F00257E34 /* CLContext.swift */,
 				211A88282046CD7000591C08 /* CLProgram.swift */,
+				218905A82049544600352104 /* CLKernel.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -468,10 +474,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
+				218905A92049544600352104 /* CLKernel.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
+				218905AB204954C100352104 /* FileDownloader.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				211A88292046CD7000591C08 /* CLProgram.swift in Sources */,
 			);

@@ -60,23 +60,52 @@ class CLClassesTests: XCTestCase {
             }
         }
         guard let program = try? CLProgram(context: ctx,
-                                     buffers: &buffer,
-                                     sizes: &bufferSize) else {
-            XCTFail("未能创建Program")
-            return
+                                           buffers: &buffer,
+                                           sizes: &bufferSize) else {
+                                            return XCTFail("未能创建Program")
         }
         XCTAssertNotNil(ctx.devices, "没有找到设备")
         var ret = false
         let log = program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _ in
             ret = isSuccess
             print(error?.localizedDescription ?? "Unknown")
-        }.first?.log
-        print(log ?? "NO LOG")
+            }.first?.options
+        print(log ?? "NO Option")
         XCTAssert(!ret, "同名函数应该导致编译失败")
     }
 
     func testKernels() {
-
+        let ctx = CLContext(deviceType: .GPU)
+        XCTAssertNotNil(ctx, "未能创建上下文")
+        let path = "/Users/modao/Downloads/source_code_mac/Ch2/kernel_search/test.cl"
+        let files = [path]
+        files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
+        var bufferSize = [Int]()
+        var buffer = [UnsafePointer<Int8>?]()
+        for file in files {
+            if let (size, charBuffer) = try? file.toDataBuffer() {
+                bufferSize.append(size)
+                buffer.append(charBuffer)
+            }
+        }
+        guard let program = try? CLProgram(context: ctx,
+                                           buffers: &buffer,
+                                           sizes: &bufferSize) else {
+                                            XCTFail("未能创建Program")
+                                            return
+        }
+        XCTAssertNotNil(ctx.devices, "没有找到设备")
+        var ret = false
+        var reason = ""
+        program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _ in
+            ret = isSuccess
+            reason = error?.localizedDescription ?? "Unknown"
+        }
+        XCTAssert(ret, reason)
+        guard let kernels = try? CLKernel.createKernels(program: program) else {
+            return XCTFail("未能创建内核")
+        }
+        XCTAssert(kernels.map{$0.name}.flatMap{$0}.contains("mult"), "未能找到mult内核")
     }
 }
 
