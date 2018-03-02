@@ -31,8 +31,8 @@ private let kernelError: (cl_int) -> NSError = { type in
     return NSError(domain: "com.daubert.OpenCL.Kernel", code: Int(type), userInfo: [NSLocalizedFailureReasonErrorKey: message])
 }
 
-public class CLKernel {
-
+public final class CLKernel {
+    
     internal let program: CLProgram
     internal let kernel: cl_kernel?
     private var _name: String?
@@ -44,7 +44,7 @@ public class CLKernel {
     public var numOfArgs: UInt32? {
         return try? integerValue(CL_KERNEL_NUM_ARGS)
     }
-
+    
     init(name: String, program: CLProgram) throws {
         _name = name
         self.program = program
@@ -55,13 +55,13 @@ public class CLKernel {
             throw kernelError(error)
         }
     }
-
+    
     private init(program: CLProgram, kernel: cl_kernel?) {
         self.program = program
         self.kernel = kernel
         _name = nil
     }
-
+    
     class func createKernels(program: CLProgram, num: UInt32 = 0) throws -> [CLKernel] {
         var numOfKernels: cl_uint = 0
         let code = clCreateKernelsInProgram(program.program, 0, nil, &numOfKernels)
@@ -73,7 +73,7 @@ public class CLKernel {
         clCreateKernelsInProgram(program.program, numOfKernels, &kernels, nil)
         return kernels.map { CLKernel(program: program, kernel: $0) }
     }
-
+    
     fileprivate func stringValue(_ type: Int32) throws -> String {
         var actualSize = 0
         let code = clGetKernelInfo(kernel, cl_kernel_info(type), 0, nil, &actualSize)
@@ -87,7 +87,7 @@ public class CLKernel {
         clGetKernelInfo(kernel, cl_kernel_info(type), actualSize, charBuffer, nil)
         return String(cString: charBuffer)
     }
-
+    
     fileprivate func integerValue(_ type: Int32) throws -> UInt32 {
         var actualSize = 0
         let code = clGetKernelInfo(kernel, cl_kernel_info(type), 0, nil, &actualSize)
@@ -98,7 +98,7 @@ public class CLKernel {
         clGetKernelInfo(kernel, cl_kernel_info(type), actualSize, &addrDataPtr, nil)
         return addrDataPtr
     }
-
+    
     deinit {
         clReleaseKernel(kernel)
     }

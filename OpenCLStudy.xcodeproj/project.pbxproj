@@ -38,6 +38,7 @@
 		218634C42045960300257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
 		218905A92049544600352104 /* CLKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905A82049544600352104 /* CLKernel.swift */; };
 		218905AB204954C100352104 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AA204954C100352104 /* FileDownloader.swift */; };
+		218905AD20496B1100352104 /* CLCommandQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AC20496B1100352104 /* CLCommandQueue.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +116,7 @@
 		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		218905A82049544600352104 /* CLKernel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernel.swift; sourceTree = "<group>"; };
 		218905AA204954C100352104 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
+		218905AC20496B1100352104 /* CLCommandQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCommandQueue.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -272,6 +274,7 @@
 				2186345B2045500F00257E34 /* CLContext.swift */,
 				211A88282046CD7000591C08 /* CLProgram.swift */,
 				218905A82049544600352104 /* CLKernel.swift */,
+				218905AC20496B1100352104 /* CLCommandQueue.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -473,6 +476,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				218905AD20496B1100352104 /* CLCommandQueue.swift in Sources */,
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
 				218905A92049544600352104 /* CLKernel.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,

@@ -77,7 +77,7 @@ class CLClassesTests: XCTestCase {
     func testKernels() {
         let ctx = CLContext(deviceType: .GPU)
         XCTAssertNotNil(ctx, "未能创建上下文")
-        let path = "/Users/modao/Downloads/source_code_mac/Ch2/kernel_search/test.cl"
+        let path = "/Users/modao/Downloads/source_code_mac/Ch2/queue_kernel/blank.cl"
         let files = [path]
         files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
         var bufferSize = [Int]()
@@ -102,10 +102,15 @@ class CLClassesTests: XCTestCase {
             reason = error?.localizedDescription ?? "Unknown"
         }
         XCTAssert(ret, reason)
-        guard let kernels = try? CLKernel.createKernels(program: program) else {
-            return XCTFail("未能创建内核")
+        guard let kernel = try? CLKernel(name: "blank", program: program) else {
+            return XCTFail("未能成功创建内核")
         }
-        XCTAssert(kernels.map{$0.name}.flatMap{$0}.contains("mult"), "未能找到mult内核")
+        guard let queue = try? CLCommandQueue(context: ctx,
+                                              device: ctx.devices!.first!,
+                                              propeties: .ProfileEnable) else {
+            return XCTFail("未能成功创建队列")
+        }
+        try? queue.enqueue(kernel: kernel)
     }
 }
 
