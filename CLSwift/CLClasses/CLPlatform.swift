@@ -49,9 +49,9 @@ public final class CLPlatform {
     }()
 
     public func devices(num_entries: UInt32 = 0,
-                        types: Set<CLDevice.CLDeviceType>) throws -> [CLDevice] {
+                        types: CLDevice.CLDeviceType) throws -> [CLDevice] {
         var devices = [cl_device_id?]()
-        for type in types {
+        for type in types.elements() {
             var devicesNum = num_entries
             var numEntries = num_entries
             // 获取设备数量

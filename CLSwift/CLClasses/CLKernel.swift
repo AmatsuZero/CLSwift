@@ -11,6 +11,14 @@ import Foundation
 private let kernelError: (cl_int) -> NSError = { type in
     var message = ""
     switch type {
+    case CL_INVALID_ARG_VALUE:
+        message = "arg_value specified is not a valid value"
+    case CL_INVALID_MEM_OBJECT:
+        message = "for an argument declared to be a memory object when the specified arg_value is not a valid memory object."
+    case CL_INVALID_SAMPLER:
+        message = "an argument declared to be of type sampler_t when the specified arg_value is not a valid sampler objec"
+    case CL_INVALID_ARG_SIZE:
+        message = "if arg_size does not match the size of the data type for an argument that is not a memory object or if the argument is a memory object and arg_size != sizeof(cl_mem) or if arg_size is zero and the argument is declared with the local qualifier or if the argument is a sampler and arg_size != sizeof(cl_sampler)"
     case CL_INVALID_PROGRAM:
         message = "program is not a valid program object"
     case CL_INVALID_PROGRAM_EXECUTABLE:
@@ -60,6 +68,13 @@ public final class CLKernel {
         self.program = program
         self.kernel = kernel
         _name = nil
+    }
+
+    func setArgument(at index: UInt32, value: inout CLKernelBuffer?) throws {
+        let code = clSetKernelArg(kernel, index, MemoryLayout.size(ofValue: value), &value)
+        guard code == CL_SUCCESS else {
+            throw kernelError(code)
+        }
     }
     
     class func createKernels(program: CLProgram, num: UInt32 = 0) throws -> [CLKernel] {

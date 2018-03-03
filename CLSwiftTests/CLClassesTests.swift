@@ -65,19 +65,21 @@ class CLClassesTests: XCTestCase {
                                             return XCTFail("未能创建Program")
         }
         XCTAssertNotNil(ctx.devices, "没有找到设备")
-        var ret = false
-        let log = program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _ in
-            ret = isSuccess
+        let buildComplete = XCTestExpectation(description: "Program build result")
+        program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _, _ in
             print(error?.localizedDescription ?? "Unknown")
-            }.first?.options
-        print(log ?? "NO Option")
-        XCTAssert(!ret, "同名函数应该导致编译失败")
+            XCTAssert(!isSuccess, "同名函数应该导致编译失败")
+            buildComplete.fulfill()
+        }
+        wait(for: [buildComplete], timeout: 100)
     }
 
     func testKernels() {
-        let ctx = CLContext(deviceType: .GPU)
+        let ctx = CLContext(deviceType: .GPU) { isSuccess, error in
+            print("")
+        }
         XCTAssertNotNil(ctx, "未能创建上下文")
-        let path = "/Users/modao/Downloads/source_code_mac/Ch2/queue_kernel/blank.cl"
+        let path = "/Users/modao/Downloads/source_code_mac/Ch2/program_build/good.cl"
         let files = [path]
         files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
         var bufferSize = [Int]()
@@ -95,22 +97,22 @@ class CLClassesTests: XCTestCase {
                                             return
         }
         XCTAssertNotNil(ctx.devices, "没有找到设备")
-        var ret = false
-        var reason = ""
-        program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _ in
-            ret = isSuccess
-            reason = error?.localizedDescription ?? "Unknown"
+        let buildComplete = XCTestExpectation(description: "Program build result")
+        program.build(options: [.DenormsAreZero, .FiniteMathOnly], devices: ctx.devices!) { isSuccess, error, _, info in
+            XCTAssert(isSuccess, error?.localizedDescription ?? "Unknown")
+            print(info?.first?.log ?? "")
+            buildComplete.fulfill()
+//            guard let kernel = try? CLKernel(name: "blank", program: program) else {
+//                return XCTFail("未能成功创建内核")
+//            }
+//            guard let queue = try? CLCommandQueue(context: ctx,
+//                                                  device: ctx.devices!.first!,
+//                                                  properties: .ProfileEnable) else {
+//                                                    return XCTFail("未能成功创建队列")
+//            }
+//            try? queue.enqueue(kernel: kernel)
         }
-        XCTAssert(ret, reason)
-        guard let kernel = try? CLKernel(name: "blank", program: program) else {
-            return XCTFail("未能成功创建内核")
-        }
-        guard let queue = try? CLCommandQueue(context: ctx,
-                                              device: ctx.devices!.first!,
-                                              propeties: .ProfileEnable) else {
-            return XCTFail("未能成功创建队列")
-        }
-        try? queue.enqueue(kernel: kernel)
+        wait(for: [buildComplete], timeout: 100)
     }
 }
 

@@ -74,14 +74,14 @@ public final class CLDevice {
         return try? typeValue()
     }()
 
-    public struct CLDeviceType: OptionSet, CLInfoProtocol, Hashable {
+    public struct CLDeviceType: OptionSet, CLInfoProtocol {
         public let rawValue: Int32
         public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)
         public static let GPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_GPU)
         public static let ACCELERATOR = CLDeviceType(rawValue: CL_DEVICE_TYPE_ACCELERATOR)
         public static let CUSTOM = CLDeviceType(rawValue: CL_DEVICE_TYPE_CUSTOM)
         public static let DEFAULT = CLDeviceType(rawValue: CL_DEVICE_TYPE_DEFAULT)
-        public static let ALL: Set<CLDeviceType> = [.CPU, .GPU, .ACCELERATOR, CUSTOM, DEFAULT]
+        public static let ALL: CLDeviceType = [.CPU, .GPU, .ACCELERATOR, CUSTOM, DEFAULT]
         public var hashValue: Int {
             return Int(rawValue)
         }

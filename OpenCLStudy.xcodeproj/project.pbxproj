@@ -39,6 +39,7 @@
 		218905A92049544600352104 /* CLKernel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905A82049544600352104 /* CLKernel.swift */; };
 		218905AB204954C100352104 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AA204954C100352104 /* FileDownloader.swift */; };
 		218905AD20496B1100352104 /* CLCommandQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AC20496B1100352104 /* CLCommandQueue.swift */; };
+		218905AF204A2F3900352104 /* CLKernelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AE204A2F3900352104 /* CLKernelData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,6 +118,7 @@
 		218905A82049544600352104 /* CLKernel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernel.swift; sourceTree = "<group>"; };
 		218905AA204954C100352104 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 		218905AC20496B1100352104 /* CLCommandQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCommandQueue.swift; sourceTree = "<group>"; };
+		218905AE204A2F3900352104 /* CLKernelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernelData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -275,6 +277,7 @@
 				211A88282046CD7000591C08 /* CLProgram.swift */,
 				218905A82049544600352104 /* CLKernel.swift */,
 				218905AC20496B1100352104 /* CLCommandQueue.swift */,
+				218905AE204A2F3900352104 /* CLKernelData.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -483,6 +486,7 @@
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
+				218905AF204A2F3900352104 /* CLKernelData.swift in Sources */,
 				218905AB204954C100352104 /* FileDownloader.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				211A88292046CD7000591C08 /* CLProgram.swift in Sources */,

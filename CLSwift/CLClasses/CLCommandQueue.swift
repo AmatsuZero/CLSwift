@@ -60,13 +60,13 @@ public final class CLCommandQueue {
         }
     }
 
-    init(context: CLContext, device: CLDevice, propeties: CLCommandProperties) throws {
+    init(context: CLContext, device: CLDevice, properties: CLCommandProperties) throws {
         self.context = context
         self.device = device
         var errorCode: cl_int = 0
         queue = clCreateCommandQueue(context.context,
                                      device.deviceId,
-                                     cl_command_queue_properties(propeties.value),
+                                     cl_command_queue_properties(properties.value),
                                      &errorCode)
         guard errorCode == CL_SUCCESS else {
             throw commandQueueError(errorCode)

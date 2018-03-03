@@ -45,9 +45,9 @@ internal let programError: (cl_int) -> NSError? = { errType -> NSError? in
 }
 
 public final class CLProgram {
-    
+
     internal let program: cl_program
-    public typealias CLBuildProgramCallBack = (Bool, Error?, [String: Any]?) -> Void
+    public typealias CLBuildProgramCallBack = (Bool, Error?, [String: Any]?, [CLBuildInfo]?) -> Void
     /// CL文件编译选项
     ///
     /// - CLVersion: 告诉编译器所使用的OpenCL版本
@@ -115,16 +115,16 @@ public final class CLProgram {
             return lhs.hashValue == rhs.hashValue
         }
     }
-    
+
     public struct CLBuildInfo {
-        
+
         private let program: cl_program
         private let device: cl_device_id?
         public var status: CLBuildStatus? {
             let code = try? integerValue(CL_PROGRAM_BUILD_STATUS)
             return CLBuildStatus(rawValue: code ?? -1)
         }
-        
+
         public var binaryType: CLBinaryType? {
             let code = try? integerValue(CL_PROGRAM_BINARY_TYPE)
             return CLBinaryType(rawValue: code ?? -1)
@@ -135,12 +135,12 @@ public final class CLProgram {
         public var options: String? {
             return try? stringValue(CL_PROGRAM_BUILD_OPTIONS)
         }
-        
+
         internal init(program: cl_program, device: cl_device_id?) {
             self.program = program
             self.device = device
         }
-        
+
         fileprivate func integerValue(_ type: Int32) throws -> Int32 {
             var actualSize = 0
             let code = clGetProgramBuildInfo(program, device, cl_program_info(type), Int.max, nil, &actualSize)
@@ -151,7 +151,7 @@ public final class CLProgram {
             clGetProgramInfo(program, cl_program_info(type), actualSize, &status, nil)
             return status
         }
-        
+
         fileprivate func stringValue(_ type: Int32) throws -> String {
             var actualSize = 0
             let code = clGetProgramBuildInfo(program, device, cl_program_info(type), 0, nil, &actualSize)
@@ -166,7 +166,7 @@ public final class CLProgram {
             return String(cString: charBuffer)
         }
     }
-    
+
     public enum CLBuildStatus: Int32 {
         case SUCCESS = 0, NONE, ERROR, IN_PROGRESS
         public init?(rawValue: Int32) {
@@ -179,7 +179,7 @@ public final class CLProgram {
             }
         }
     }
-    
+
     public enum CLBinaryType: Int32 {
         case NONE = 0, COMPILED_OBJECT, LIBRARY, EXECUTABLE, INTERMEDIATE
         public init(rawValue: Int32) {
@@ -211,25 +211,29 @@ public final class CLProgram {
             throw programError(errorCode)!
         }
     }
-    
-    @discardableResult
+
     func build(options: Set<CLProgramBuildOption>? = nil,
                devices: [CLDevice],
                userData: [String: Any]? = nil,
-               callback: CLBuildProgramCallBack? = nil) -> [CLBuildInfo] {
+               callback: CLBuildProgramCallBack? = nil) {
         let optionsString = options?.isEmpty == false
             ? options!.map { $0.string }.reduce("") { $0.appending("\($1) ") }
             : nil
-        let code = clBuildProgram(program,
-                                  cl_uint(devices.count),
-                                  devices.map { $0.deviceId },
-                                  optionsString,
-                                  nil,
-                                  nil)
-        callback?(code == CL_SUCCESS, programError(code), userData)
-        return devices.map { CLBuildInfo(program: program, device: $0.deviceId) }
+        DispatchQueue.global().async { [weak self] in
+            guard let strongSelf = self else { return }
+            let code = clBuildProgram(strongSelf.program,
+                                      cl_uint(devices.count),
+                                      devices.map { $0.deviceId },
+                                      optionsString,
+                                      nil,
+                                      nil)
+            callback?(code == CL_SUCCESS,
+                    programError(code),
+                      userData,
+                      devices.map { CLBuildInfo(program: strongSelf.program, device: $0.deviceId) })
+        }
     }
-    
+
     deinit {
         clReleaseProgram(program)
     }

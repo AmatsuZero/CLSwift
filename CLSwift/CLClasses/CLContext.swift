@@ -8,7 +8,7 @@
 
 import Foundation
 
-internal let contextError: (cl_int, String) -> NSError? = { (errType, desc) in
+internal let contextError: (cl_int, [String: Any]?) -> NSError? = { (errType, desc) in
     var message = ""
     switch errType {
     case CL_SUCCESS: return nil
@@ -35,34 +35,23 @@ internal let contextError: (cl_int, String) -> NSError? = { (errType, desc) in
     default:
         message = "Unknown error"
     }
+    var userInfo: [String: Any] = [NSLocalizedFailureReasonErrorKey:message]
+    if let userData = desc {
+          userInfo.append(userData)
+    }
     return NSError(domain: "com.daubert.OpenCL.Context",
                    code: Int(errType),
-                   userInfo: [
-                    NSLocalizedFailureReasonErrorKey:message,
-                    NSLocalizedDescriptionKey: desc
-        ])
+                   userInfo: userInfo)
 }
 
 private var kErrorAssociatedObjectKey = "kCLCreateContextError"
 
-private func createContextCallBack(errorInfo: UnsafePointer<Int8>?,
-                                   privateInfo: UnsafeRawPointer?,
-                                   cb: Int,
-                                   userData: UnsafeMutableRawPointer?) {
-    objc_setAssociatedObject(CLContext.self,
-                             &(CLContext.callBackId),
-                             errorInfo != nil ? String(cString: errorInfo!) : "",
-                             .OBJC_ASSOCIATION_COPY)
-}
-
 public final class CLContext {
-    
-    fileprivate static var callBackId: Int = 0
+
     public typealias CLCreateContextCallBack = (Bool, Error?) -> Void
     internal let context: cl_context!
     private var _devices: [CLDevice]?
     private var properties: [cl_context_properties]?
-    private var contextId: Int
     public private(set) var devices: [CLDevice]? {
         set(newDevices) {
             _devices = newDevices
@@ -91,19 +80,15 @@ public final class CLContext {
                 userData: [String: Any]? = nil,
                 callBack: CLCreateContextCallBack? = nil) {
         var errCode: cl_int = 0
-        var extraInfo = userData
-        CLContext.callBackId += 1
-        contextId = CLContext.callBackId
         context = clCreateContext(props, cl_uint(devices.count),
                                   devices.map { $0.deviceId },
-                                  callBack != nil ? createContextCallBack : nil,
-                                  &extraInfo,
+                                  nil,
+                                  nil,
                                   &errCode)
         properties = props
         _devices = devices
         guard errCode == CL_SUCCESS else {
-            callBack?(false, contextError(errCode,
-                                          objc_getAssociatedObject(CLContext.self, &contextId) as? String ?? "Unknown"))
+            callBack?(false, contextError(errCode, userData))
             return
         }
         callBack?(true, nil)
@@ -114,18 +99,14 @@ public final class CLContext {
                 userData: [String: Any]? = nil,
                 callBack: CLCreateContextCallBack? = nil) {
         var errCode: cl_int = 0
-        var extraInfo = userData
-        CLContext.callBackId += 1
-        contextId = CLContext.callBackId
         context = clCreateContextFromType(props,
                                           deviceType.value,
-                                          callBack != nil ? createContextCallBack : nil,
-                                          &extraInfo,
+                                          nil,
+                                          nil,
                                           &errCode)
         properties = props
         guard errCode == CL_SUCCESS else {
-            callBack?(false, contextError(errCode,
-                                          objc_getAssociatedObject(CLContext.self, &contextId) as? String ?? "Unknown"))
+            callBack?(false, contextError(errCode, userData))
             return
         }
         callBack?(true, nil)
