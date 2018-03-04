@@ -151,7 +151,7 @@ public final class CLProgram {
             clGetProgramInfo(program, cl_program_info(type), actualSize, &status, nil)
             return status
         }
-
+        //FIXME: Can't get string value
         fileprivate func stringValue(_ type: Int32) throws -> String {
             var actualSize = 0
             let code = clGetProgramBuildInfo(program, device, cl_program_info(type), 0, nil, &actualSize)

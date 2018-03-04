@@ -14,12 +14,6 @@
 		2186349A2045710300257E34 /* CLClassesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634992045710300257E34 /* CLClassesTests.swift */; };
 		2186349C2045710300257E34 /* CLSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2186348E2045710300257E34 /* CLSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		218634A32045711800257E34 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2150AF6A20402C4E00BCAE24 /* OpenCL.framework */; };
-		218634AF204595B800257E34 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634AE204595B800257E34 /* AppDelegate.swift */; };
-		218634B1204595B800257E34 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634B0204595B800257E34 /* ViewController.swift */; };
-		218634B3204595BB00257E34 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 218634B2204595BB00257E34 /* Assets.xcassets */; };
-		218634B6204595BB00257E34 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 218634B4204595BB00257E34 /* Main.storyboard */; };
-		218634BC204595C400257E34 /* CLSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; };
-		218634BD204595C400257E34 /* CLSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		218634C12045960300257E34 /* CLDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345520450D8B00257E34 /* CLDevice.swift */; };
 		218634C22045960300257E34 /* CLPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345720451D1800257E34 /* CLPlatform.swift */; };
 		218634C32045960300257E34 /* CLContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2186345B2045500F00257E34 /* CLContext.swift */; };
@@ -38,28 +32,7 @@
 			remoteGlobalIDString = 2186348B2045710300257E34;
 			remoteInfo = CLSwift;
 		};
-		218634BE204595C400257E34 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 210811CC203EFF2400B54879 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2186348B2045710300257E34;
-			remoteInfo = CLSwift;
-		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		218634C0204595C400257E34 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				218634BD204595C400257E34 /* CLSwift.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		211A8826204661AD00591C08 /* CLOranganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLOranganizer.swift; sourceTree = "<group>"; };
@@ -76,13 +49,6 @@
 		218634942045710300257E34 /* CLSwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CLSwiftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		218634992045710300257E34 /* CLClassesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLClassesTests.swift; sourceTree = "<group>"; };
 		2186349B2045710300257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		218634AC204595B800257E34 /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		218634AE204595B800257E34 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		218634B0204595B800257E34 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		218634B2204595BB00257E34 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		218634B5204595BB00257E34 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		218634B7204595BB00257E34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		218634B8204595BB00257E34 /* Demo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Demo.entitlements; sourceTree = "<group>"; };
 		218905A82049544600352104 /* CLKernel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernel.swift; sourceTree = "<group>"; };
 		218905AA204954C100352104 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 		218905AC20496B1100352104 /* CLCommandQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCommandQueue.swift; sourceTree = "<group>"; };
@@ -106,14 +72,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		218634A9204595B800257E34 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				218634BC204595C400257E34 /* CLSwift.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -122,7 +80,6 @@
 			children = (
 				2186348D2045710300257E34 /* CLSwift */,
 				218634982045710300257E34 /* CLSwiftTests */,
-				218634AD204595B800257E34 /* Demo */,
 				210811D5203EFF2400B54879 /* Products */,
 				2150AF6920402C4E00BCAE24 /* Frameworks */,
 			);
@@ -133,7 +90,6 @@
 			children = (
 				2186348C2045710300257E34 /* CLSwift.framework */,
 				218634942045710300257E34 /* CLSwiftTests.xctest */,
-				218634AC204595B800257E34 /* Demo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -199,19 +155,6 @@
 			path = CLClasses;
 			sourceTree = "<group>";
 		};
-		218634AD204595B800257E34 /* Demo */ = {
-			isa = PBXGroup;
-			children = (
-				218634AE204595B800257E34 /* AppDelegate.swift */,
-				218634B0204595B800257E34 /* ViewController.swift */,
-				218634B2204595BB00257E34 /* Assets.xcassets */,
-				218634B4204595BB00257E34 /* Main.storyboard */,
-				218634B7204595BB00257E34 /* Info.plist */,
-				218634B8204595BB00257E34 /* Demo.entitlements */,
-			);
-			path = Demo;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -262,25 +205,6 @@
 			productReference = 218634942045710300257E34 /* CLSwiftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		218634AB204595B800257E34 /* Demo */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 218634B9204595BB00257E34 /* Build configuration list for PBXNativeTarget "Demo" */;
-			buildPhases = (
-				218634A8204595B800257E34 /* Sources */,
-				218634A9204595B800257E34 /* Frameworks */,
-				218634AA204595B800257E34 /* Resources */,
-				218634C0204595C400257E34 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				218634BF204595C400257E34 /* PBXTargetDependency */,
-			);
-			name = Demo;
-			productName = Demo;
-			productReference = 218634AC204595B800257E34 /* Demo.app */;
-			productType = "com.apple.product-type.application";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -297,10 +221,6 @@
 						ProvisioningStyle = Automatic;
 					};
 					218634932045710300257E34 = {
-						CreatedOnToolsVersion = 9.3;
-						ProvisioningStyle = Automatic;
-					};
-					218634AB204595B800257E34 = {
 						CreatedOnToolsVersion = 9.3;
 						ProvisioningStyle = Automatic;
 					};
@@ -321,7 +241,6 @@
 			targets = (
 				2186348B2045710300257E34 /* CLSwift */,
 				218634932045710300257E34 /* CLSwiftTests */,
-				218634AB204595B800257E34 /* Demo */,
 			);
 		};
 /* End PBXProject section */
@@ -338,15 +257,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		218634AA204595B800257E34 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				218634B3204595BB00257E34 /* Assets.xcassets in Resources */,
-				218634B6204595BB00257E34 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,15 +289,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		218634A8204595B800257E34 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				218634B1204595B800257E34 /* ViewController.swift in Sources */,
-				218634AF204595B800257E34 /* AppDelegate.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -396,23 +297,7 @@
 			target = 2186348B2045710300257E34 /* CLSwift */;
 			targetProxy = 218634962045710300257E34 /* PBXContainerItemProxy */;
 		};
-		218634BF204595C400257E34 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2186348B2045710300257E34 /* CLSwift */;
-			targetProxy = 218634BE204595C400257E34 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		218634B4204595BB00257E34 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				218634B5204595BB00257E34 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		210811D9203EFF2400B54879 /* Debug */ = {
@@ -612,40 +497,6 @@
 			};
 			name = Release;
 		};
-		218634BA204595BB00257E34 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Demo/Demo.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = TCU9L9SQC4;
-				INFOPLIST_FILE = Demo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MockingBot.Demo;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-			};
-			name = Debug;
-		};
-		218634BB204595BB00257E34 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Demo/Demo.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = TCU9L9SQC4;
-				INFOPLIST_FILE = Demo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.MockingBot.Demo;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -672,15 +523,6 @@
 			buildConfigurations = (
 				218634A12045710300257E34 /* Debug */,
 				218634A22045710300257E34 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		218634B9204595BB00257E34 /* Build configuration list for PBXNativeTarget "Demo" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				218634BA204595BB00257E34 /* Debug */,
-				218634BB204595BB00257E34 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

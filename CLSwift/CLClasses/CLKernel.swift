@@ -70,12 +70,11 @@ public final class CLKernel {
         _name = nil
     }
 
-    func setArgument(at index: UInt32, value: inout CLKernelBuffer?) throws {
-        var memObj = value?.mem
+    func setArgument(at index: UInt32, value: inout CLKernelData) throws {
         let code = clSetKernelArg(kernel,
                                   index,
-                                  MemoryLayout.size(ofValue: memObj),
-                                  &memObj)
+                                  MemoryLayout.size(ofValue: value.mem),
+                                  &value.mem)
         guard code == CL_SUCCESS else {
             throw kernelError(code)
         }

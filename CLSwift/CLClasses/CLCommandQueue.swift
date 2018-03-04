@@ -85,6 +85,17 @@ public final class CLCommandQueue {
         }
         return event
     }
+    
+    func enqueue(buffer: CLKernelData) throws {
+        switch buffer {
+        case is CLKernelBuffer:
+            break
+        case is CLKernelImageBuffer:
+            break
+        default:
+            break
+        }
+    }
 
     deinit {
         clReleaseCommandQueue(queue)

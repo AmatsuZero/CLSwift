@@ -12,6 +12,8 @@ private let bufferError: (cl_int) -> NSError = { type in
     var message = ""
     switch type {
     case CL_INVALID_MEM_OBJECT:
+        message = "memobj is not valid"
+    case CL_INVALID_MEM_OBJECT:
         message = "buffer is not a valid buffer objefct or is a sub-buffer object"
     case CL_INVALID_CONTEXT:
         message = "context is not a valid context."
@@ -36,10 +38,7 @@ private let bufferError: (cl_int) -> NSError = { type in
 }
 
 public class CLKernelData {
-    
-    let context: CLContext
-    let mem: cl_mem?
-    
+
     public struct CLMemFlags: OptionSet {
         public var rawValue: Int32
         public static let WRITE = CLMemFlags(rawValue: CL_MEM_WRITE_ONLY)
@@ -55,10 +54,45 @@ public class CLKernelData {
             return cl_mem_flags(rawValue)
         }
     }
-    
-    required public init(_ memObj: cl_mem?, _ context: CLContext) {
+    let context: CLContext
+    let memFlags: CLMemFlags
+    var mem: cl_mem?
+    var size: size_t? {
+        return try? integerValue(type: CL_MEM_SIZE)
+    }
+    var offset: size_t? {
+        return try? integerValue(type: CL_MEM_OFFSET)
+    }
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
         mem = memObj
+        memFlags = flags
         self.context = context
+    }
+    
+    fileprivate func integerValue(type: Int32) throws -> Int {
+        var actualSize = 0
+        let code = clGetMemObjectInfo(mem,
+                                      cl_mem_info(type),
+                                      Int.max,
+                                      nil,
+                                      &actualSize)
+        guard code == CL_SUCCESS else { throw bufferError(code) }
+        var value = 0
+        clGetMemObjectInfo(mem, cl_mem_info(type), actualSize, &value, nil)
+        return value
+    }
+    
+    fileprivate func ptrValue(type: Int32) throws -> OpaquePointer? {
+        var actualSize = 0
+        let code = clGetMemObjectInfo(mem,
+                                      cl_mem_info(type),
+                                      Int.max,
+                                      nil,
+                                      &actualSize)
+        guard code == CL_SUCCESS else { throw bufferError(code) }
+        var value: OpaquePointer? = nil
+        clGetMemObjectInfo(mem, cl_mem_info(type), actualSize, &value, nil)
+        return value
     }
 }
 
@@ -77,11 +111,11 @@ public final class CLKernelBuffer: CLKernelData {
         guard err == CL_SUCCESS else {
             throw bufferError(err)
         }
-        super.init(mem, context)
+        super.init(flags, mem, context)
     }
     
-    required public init(_ memObj: cl_mem?, _ context: CLContext) {
-        super.init(memObj, context)
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
+        super.init(flags, memObj, context)
     }
     
     func subBuffer(flags: CLMemFlags,
@@ -97,7 +131,7 @@ public final class CLKernelBuffer: CLKernelData {
         guard errCode == CL_SUCCESS else {
             throw bufferError(errCode)
         }
-        return CLKernelBuffer(subMem, context)
+        return CLKernelBuffer(flags, subMem, context)
     }
     
     deinit {
@@ -247,7 +281,7 @@ public final class CLKernelImageBuffer: CLKernelData {
             set(newValue) {
                 guard (type == .Image2D && newValue <= CL_DEVICE_IMAGE2D_MAX_HEIGHT) ||
                     (type == .Image3D && newValue <= CL_DEVICE_IMAGE3D_MAX_HEIGHT) ||
-                (type == .Image2DArray && newValue <= CL_DEVICE_IMAGE2D_MAX_HEIGHT) else { return }
+                    (type == .Image2DArray && newValue <= CL_DEVICE_IMAGE2D_MAX_HEIGHT) else { return }
                 desc.image_height = newValue
             }
             get { return desc.image_width }
@@ -313,11 +347,13 @@ public final class CLKernelImageBuffer: CLKernelData {
             self.buffer = buffer
         }
     }
-    
     private(set) var format: CLImageFormat?
     private(set) var desc: CLImageDesc?
-    
-    init(context: CLContext, flags: CLMemFlags,
+    var elementSize: size_t? {
+        return try? integerValue(type: CL_IMAGE_ELEMENT_SIZE)
+    }
+    init(context: CLContext,
+         flags: CLMemFlags,
          desc: CLImageDesc,
          format: CLImageFormat,
          data: inout [Any]?) throws {
@@ -330,10 +366,23 @@ public final class CLKernelImageBuffer: CLKernelData {
                                 &self.desc!.desc,
                                 &data,
                                 &errCode)
-        super.init(mem, context)
+        super.init(flags, mem, context)
     }
     
-    required public init(_ memObj: cl_mem?, _ context: CLContext) {
-        super.init(memObj, context)
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
+        super.init(flags, memObj, context)
+    }
+    
+    override func integerValue(type: Int32) throws -> Int {
+        var actualSize = 0
+        let code = clGetImageInfo(mem,
+                                  cl_mem_info(type),
+                                  Int.max,
+                                  nil,
+                                  &actualSize)
+        guard code == CL_SUCCESS else { throw bufferError(code) }
+        var value = 0
+        clGetImageInfo(mem, cl_mem_info(type), actualSize, &value, nil)
+        return value
     }
 }
