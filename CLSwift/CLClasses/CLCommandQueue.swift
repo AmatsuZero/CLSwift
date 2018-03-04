@@ -50,8 +50,7 @@ public final class CLCommandQueue {
     internal let queue: cl_command_queue
 
     public enum CLCommandProperties {
-        case ProfileEnable
-        case OutOfOrder
+        case ProfileEnable, OutOfOrder
         var value: Int32 {
             switch self {
             case .ProfileEnable: return CL_QUEUE_PROFILING_ENABLE

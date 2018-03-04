@@ -11,6 +11,8 @@ import Foundation
 private let bufferError: (cl_int) -> NSError = { type in
     var message = ""
     switch type {
+    case CL_INVALID_MEM_OBJECT:
+        message = "buffer is not a valid buffer objefct or is a sub-buffer object"
     case CL_INVALID_CONTEXT:
         message = "context is not a valid context."
     case CL_INVALID_VALUE:
@@ -33,11 +35,11 @@ private let bufferError: (cl_int) -> NSError = { type in
                    userInfo: [NSLocalizedFailureReasonErrorKey: message])
 }
 
-public class CLKernelBuffer {
-
+public class CLKernelData {
+    
     let context: CLContext
-    internal let mem: cl_mem
-
+    let mem: cl_mem?
+    
     public struct CLMemFlags: OptionSet {
         public var rawValue: Int32
         public static let WRITE = CLMemFlags(rawValue: CL_MEM_WRITE_ONLY)
@@ -53,18 +55,285 @@ public class CLKernelBuffer {
             return cl_mem_flags(rawValue)
         }
     }
-
-    init(context: CLContext, flags: CLMemFlags, data: [Any]) throws {
+    
+    required public init(_ memObj: cl_mem?, _ context: CLContext) {
+        mem = memObj
         self.context = context
+    }
+}
+
+public final class CLKernelBuffer: CLKernelData {
+    
+    init(context: CLContext,
+         flags: CLMemFlags,
+         hostBuffer vec: [Any]?) throws {
         var err: cl_int = 0
-        var buffer = data
-        mem = clCreateBuffer(context.context,
-                             flags.value,
-                             MemoryLayout.size(ofValue: data),
-                             &buffer,
-                             &err)
+        var buffer = vec
+        let mem = clCreateBuffer(context.context,
+                                 flags.value,
+                                 MemoryLayout.stride(ofValue: vec),
+                                 &buffer,
+                                 &err)
         guard err == CL_SUCCESS else {
             throw bufferError(err)
         }
+        super.init(mem, context)
+    }
+    
+    required public init(_ memObj: cl_mem?, _ context: CLContext) {
+        super.init(memObj, context)
+    }
+    
+    func subBuffer(flags: CLMemFlags,
+                   origin start: Int,
+                   size end: Int) throws -> CLKernelBuffer {
+        var errCode: cl_int = 0
+        var region = cl_buffer_region(origin: start, size: end)
+        let subMem = clCreateSubBuffer(mem,
+                                       flags.value,
+                                       cl_buffer_create_type(CL_BUFFER_CREATE_TYPE_REGION),
+                                       &region,
+                                       &errCode)
+        guard errCode == CL_SUCCESS else {
+            throw bufferError(errCode)
+        }
+        return CLKernelBuffer(subMem, context)
+    }
+    
+    deinit {
+        clReleaseMemObject(mem)
+    }
+}
+
+public final class CLKernelImageBuffer: CLKernelData {
+    struct CLImageFormat {
+        enum CLChannelOrder {
+            case RGB, RGBA, ARGB, BGRA, RG, RA, R, A, RGBx, Rx, RGx, Intensity
+            var value: cl_channel_order {
+                switch self {
+                case .RGB: return cl_channel_order(CL_RGB)
+                case .RGBA: return cl_channel_order(CL_RGBA)
+                case .ARGB: return cl_channel_order(CL_ARGB)
+                case .BGRA: return cl_channel_order(CL_BGRA)
+                case .RG: return cl_channel_order(CL_RG)
+                case .RA: return cl_channel_order(CL_RA)
+                case .R: return cl_channel_order(CL_R)
+                case .A: return cl_channel_order(CL_A)
+                case .RGBx: return cl_channel_order(CL_RGBx)
+                case .Rx: return cl_channel_order(CL_Rx)
+                case .RGx: return cl_channel_order(CL_RGx)
+                case .Intensity: return cl_channel_order(CL_INTENSITY)
+                }
+            }
+            init?(_ type: cl_channel_order) {
+                switch type {
+                case cl_channel_order(CL_RGB): self = .RGB
+                case cl_channel_order(CL_RGBA): self = .RGBA
+                case cl_channel_order(CL_ARGB): self = .ARGB
+                case cl_channel_order(CL_BGRA): self = .BGRA
+                case cl_channel_order(CL_RG): self = .RG
+                case cl_channel_order(CL_RA): self = .RA
+                case cl_channel_order(CL_R): self = .R
+                case cl_channel_order(CL_A): self = .A
+                case cl_channel_order(CL_RGBx): self = .RGBx
+                case cl_channel_order(CL_Rx): self = .Rx
+                case cl_channel_order(CL_RGx): self = .RGx
+                case cl_channel_order(CL_INTENSITY): self = .Intensity
+                default: return nil
+                }
+            }
+        }
+        enum CLChannelType {
+            case Float16, Float32, UInt8, UInt16, UInt32, Int8, Int16, Int32
+            case UNInt8, UNInt16, UNInt24, NInt8, NInt16, NSInt565, NSInt555
+            case NInt101010
+            var value: cl_channel_type {
+                switch self {
+                case .Float16: return cl_channel_type(CL_HALF_FLOAT)
+                case .Float32: return cl_channel_type(CL_FLOAT)
+                case .UInt8: return cl_channel_type(CL_UNSIGNED_INT8)
+                case .UInt16: return cl_channel_type(CL_UNSIGNED_INT16)
+                case .UInt32: return cl_channel_type(CL_UNSIGNED_INT32)
+                case .Int8: return cl_channel_type(CL_SIGNED_INT8)
+                case .Int16: return cl_channel_type(CL_SIGNED_INT16)
+                case .Int32: return cl_channel_type(CL_SIGNED_INT32)
+                case .UNInt8: return cl_channel_type(CL_UNORM_INT8)
+                case .UNInt16: return cl_channel_type(CL_UNORM_INT16)
+                case .UNInt24: return cl_channel_type(CL_UNORM_INT24)
+                case .NInt8: return cl_channel_type(CL_SNORM_INT8)
+                case .NInt16: return cl_channel_type(CL_SNORM_INT16)
+                case .NSInt565: return cl_channel_type(CL_UNORM_SHORT_565)
+                case .NSInt555: return cl_channel_type(CL_UNORM_SHORT_555)
+                case .NInt101010: return cl_channel_type(CL_UNORM_INT_101010)
+                }
+            }
+            init?(_ type: cl_channel_type) {
+                switch type {
+                case cl_channel_type(CL_HALF_FLOAT): self = .Float16
+                case cl_channel_type(CL_FLOAT): self = .Float32
+                case cl_channel_type(CL_UNSIGNED_INT8): self = .UInt8
+                case cl_channel_type(CL_UNSIGNED_INT16): self = .UInt16
+                case cl_channel_type(CL_UNSIGNED_INT32): self = .UInt32
+                case cl_channel_type(CL_SIGNED_INT8): self = .Int8
+                case cl_channel_type(CL_SIGNED_INT16): self = .Int16
+                case cl_channel_type(CL_SIGNED_INT32): self = .Int32
+                case cl_channel_type(CL_UNORM_INT8): self = .UNInt8
+                case cl_channel_type(CL_UNORM_INT16): self = .UNInt16
+                case cl_channel_type(CL_UNORM_INT24): self = .UNInt24
+                case cl_channel_type(CL_SNORM_INT8): self = .NInt8
+                case cl_channel_type(CL_SNORM_INT16): self = .NInt16
+                case cl_channel_type(CL_UNORM_SHORT_565): self = .NSInt565
+                case cl_channel_type(CL_UNORM_SHORT_555): self = .NSInt555
+                case cl_channel_type(CL_UNORM_INT_101010): self = .NInt101010
+                default: return nil
+                }
+            }
+        }
+        var format: cl_image_format
+        var order: CLChannelOrder {
+            set(newValue) { format.image_channel_order = newValue.value }
+            get { return CLChannelOrder(format.image_channel_order)! }
+        }
+        var type: CLChannelType {
+            set(newValue) { format.image_channel_data_type = newValue.value }
+            get { return CLChannelType(format.image_channel_data_type)! }
+        }
+        init(order: CLChannelOrder, format: CLChannelType) {
+            self.format = cl_image_format(image_channel_order: order.value,
+                                          image_channel_data_type: format.value)
+        }
+    }
+    struct CLImageDesc {
+        enum CLMemObjectType {
+            case Image1D, Image1DBuffer, Image1DArray, Image2D, Image2DArray, Image3D
+            var value: cl_mem_object_type {
+                switch self {
+                case .Image1D: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D)
+                case .Image1DBuffer: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D_BUFFER)
+                case .Image1DArray: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D_ARRAY)
+                case .Image2D: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE2D)
+                case .Image2DArray: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE2D_ARRAY)
+                case .Image3D: return cl_mem_object_type(CL_MEM_OBJECT_IMAGE3D)
+                }
+            }
+            init?(type: cl_mem_object_type) {
+                switch type {
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D): self = .Image1D
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D_BUFFER): self = .Image1DBuffer
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE1D_ARRAY): self = .Image1DArray
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE2D): self = .Image2D
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE2D_ARRAY): self = .Image2DArray
+                case cl_mem_object_type(CL_MEM_OBJECT_IMAGE3D): self = .Image3D
+                default: return nil
+                }
+            }
+        }
+        var buffer: CLKernelData? {
+            didSet {
+                guard type == .Image1D else { return }
+                desc.buffer = buffer?.mem
+            }
+        }
+        var imageWidth: size_t {
+            set(newValue) {
+                guard (type == .Image2D && newValue <= CL_DEVICE_IMAGE2D_MAX_WIDTH) ||
+                    (type == .Image3D && newValue <= CL_DEVICE_IMAGE3D_MAX_WIDTH) ||
+                    (type == .Image1DBuffer && newValue <= CL_DEVICE_IMAGE_MAX_BUFFER_SIZE) else { return }
+                desc.image_width = newValue
+            }
+            get { return desc.image_width }
+        }
+        var imageHeight: size_t {
+            set(newValue) {
+                guard (type == .Image2D && newValue <= CL_DEVICE_IMAGE2D_MAX_HEIGHT) ||
+                    (type == .Image3D && newValue <= CL_DEVICE_IMAGE3D_MAX_HEIGHT) ||
+                (type == .Image2DArray && newValue <= CL_DEVICE_IMAGE2D_MAX_HEIGHT) else { return }
+                desc.image_height = newValue
+            }
+            get { return desc.image_width }
+        }
+        var imageDepth: size_t {
+            set(newValue) {
+                guard type == .Image3D, newValue >= 1,
+                    newValue <= CL_DEVICE_IMAGE3D_MAX_DEPTH else { return }
+                desc.image_depth = newValue
+            }
+            get { return desc.image_depth }
+        }
+        var arraySize: size_t {
+            set(newValue) {
+                guard (type == .Image1D || type == .Image2D),
+                    newValue >= 1, 
+                    newValue <= CL_DEVICE_IMAGE_MAX_ARRAY_SIZE else { return }
+                desc.image_array_size = newValue
+            }
+            get { return desc.image_array_size }
+        }
+        var rowPitch: size_t {
+            set(newValue) { desc.image_row_pitch = newValue }
+            get { return desc.image_row_pitch }
+        }
+        var slicePitch: size_t {
+            set(newValue) { desc.image_slice_pitch = newValue }
+            get { return desc.image_slice_pitch }
+        }
+        private(set) var mipLevels: UInt32 = 0 {
+            didSet {
+                self.desc.num_mip_levels = mipLevels
+            }
+        }
+        private(set) var samplesCount: UInt32 = 0 {
+            didSet {
+                self.desc.num_samples = samplesCount
+            }
+        }
+        var desc: cl_image_desc
+        var type: CLMemObjectType {
+            set(newValue) { desc.image_type = newValue.value}
+            get { return CLMemObjectType(type: desc.image_type)! }
+        }
+        init(type: CLMemObjectType,
+             width: size_t,
+             height: size_t,
+             depth: size_t,
+             arraySize: size_t = 0,
+             rowPitch: size_t = 0,
+             slicePitch: size_t = 0,
+             buffer: CLKernelData? = nil) throws {
+            desc = cl_image_desc(image_type: type.value,
+                                 image_width: width,
+                                 image_height: height,
+                                 image_depth: depth,
+                                 image_array_size: arraySize,
+                                 image_row_pitch: rowPitch,
+                                 image_slice_pitch: slicePitch,
+                                 num_mip_levels: mipLevels,
+                                 num_samples: samplesCount,
+                                 buffer: type == .Image1D ? buffer?.mem : nil)
+            self.buffer = buffer
+        }
+    }
+    
+    private(set) var format: CLImageFormat?
+    private(set) var desc: CLImageDesc?
+    
+    init(context: CLContext, flags: CLMemFlags,
+         desc: CLImageDesc,
+         format: CLImageFormat,
+         data: inout [Any]?) throws {
+        var errCode: cl_int = 0
+        self.format = format
+        self.desc = desc
+        let mem = clCreateImage(context.context,
+                                flags.value,
+                                &self.format!.format,
+                                &self.desc!.desc,
+                                &data,
+                                &errCode)
+        super.init(mem, context)
+    }
+    
+    required public init(_ memObj: cl_mem?, _ context: CLContext) {
+        super.init(memObj, context)
     }
 }

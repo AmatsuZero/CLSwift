@@ -7,21 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		210811D8203EFF2400B54879 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210811D7203EFF2400B54879 /* main.swift */; };
-		210811DF203F008300B54879 /* matvec.cl in Sources */ = {isa = PBXBuildFile; fileRef = 210811DE203F008200B54879 /* matvec.cl */; };
-		210811E2203F00F700B54879 /* matvec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210811E1203F00F700B54879 /* matvec.swift */; };
 		211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A8826204661AD00591C08 /* CLOranganizer.swift */; };
 		211A88292046CD7000591C08 /* CLProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A88282046CD7000591C08 /* CLProgram.swift */; };
 		211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A882C2046CF3A00591C08 /* StringFileExtenions.swift */; };
-		2150AF6820400A0A00BCAE24 /* platform_ext_text.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */; };
-		2150AF6B20402C4E00BCAE24 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2150AF6A20402C4E00BCAE24 /* OpenCL.framework */; };
-		2150AF6D2040335400BCAE24 /* device_ext_test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6C2040335400BCAE24 /* device_ext_test.swift */; };
-		2150AF6F2043BC3900BCAE24 /* context_count.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF6E2043BC3900BCAE24 /* context_count.swift */; };
-		2150AF762043E15700BCAE24 /* program_build.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150AF752043E15700BCAE24 /* program_build.swift */; };
-		21863447204424F800257E34 /* kernel_search.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21863446204424F800257E34 /* kernel_search.swift */; };
-		2186344A2044254300257E34 /* test.cl in Sources */ = {isa = PBXBuildFile; fileRef = 218634492044254300257E34 /* test.cl */; };
-		218634532044FC7100257E34 /* CLHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634522044FC7100257E34 /* CLHelper.swift */; };
-		2186345A2045413000257E34 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634592045413000257E34 /* Extensions.swift */; };
 		218634952045710300257E34 /* CLSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; };
 		2186349A2045710300257E34 /* CLClassesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634992045710300257E34 /* CLClassesTests.swift */; };
 		2186349C2045710300257E34 /* CLSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2186348E2045710300257E34 /* CLSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -60,15 +48,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		210811D2203EFF2400B54879 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = usr/share/man/man1;
-			dstSubfolderSpec = 7;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		218634C0204595C400257E34 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -83,21 +62,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		210811D4203EFF2400B54879 /* OpenCLStudy */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OpenCLStudy; sourceTree = BUILT_PRODUCTS_DIR; };
-		210811D7203EFF2400B54879 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		210811DE203F008200B54879 /* matvec.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = matvec.cl; sourceTree = "<group>"; };
-		210811E1203F00F700B54879 /* matvec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = matvec.swift; sourceTree = "<group>"; };
 		211A8826204661AD00591C08 /* CLOranganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLOranganizer.swift; sourceTree = "<group>"; };
 		211A88282046CD7000591C08 /* CLProgram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLProgram.swift; sourceTree = "<group>"; };
 		211A882C2046CF3A00591C08 /* StringFileExtenions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringFileExtenions.swift; sourceTree = "<group>"; };
-		2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = platform_ext_text.swift; sourceTree = "<group>"; };
 		2150AF6A20402C4E00BCAE24 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
-		2150AF6C2040335400BCAE24 /* device_ext_test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = device_ext_test.swift; sourceTree = "<group>"; };
-		2150AF6E2043BC3900BCAE24 /* context_count.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = context_count.swift; sourceTree = "<group>"; };
-		2150AF752043E15700BCAE24 /* program_build.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = program_build.swift; sourceTree = "<group>"; };
-		21863446204424F800257E34 /* kernel_search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kernel_search.swift; sourceTree = "<group>"; };
-		218634492044254300257E34 /* test.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = test.cl; sourceTree = "<group>"; };
-		218634522044FC7100257E34 /* CLHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLHelper.swift; sourceTree = "<group>"; };
 		2186345520450D8B00257E34 /* CLDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDevice.swift; sourceTree = "<group>"; };
 		2186345720451D1800257E34 /* CLPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLPlatform.swift; sourceTree = "<group>"; };
 		218634592045413000257E34 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -122,14 +90,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		210811D1203EFF2400B54879 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2150AF6B20402C4E00BCAE24 /* OpenCL.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		218634882045710300257E34 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -160,7 +120,6 @@
 		210811CB203EFF2400B54879 = {
 			isa = PBXGroup;
 			children = (
-				210811D6203EFF2400B54879 /* OpenCLStudy */,
 				2186348D2045710300257E34 /* CLSwift */,
 				218634982045710300257E34 /* CLSwiftTests */,
 				218634AD204595B800257E34 /* Demo */,
@@ -172,32 +131,11 @@
 		210811D5203EFF2400B54879 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				210811D4203EFF2400B54879 /* OpenCLStudy */,
 				2186348C2045710300257E34 /* CLSwift.framework */,
 				218634942045710300257E34 /* CLSwiftTests.xctest */,
 				218634AC204595B800257E34 /* Demo.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		210811D6203EFF2400B54879 /* OpenCLStudy */ = {
-			isa = PBXGroup;
-			children = (
-				2150AF66204009EB00BCAE24 /* ChapterTwo */,
-				210811E0203F00A400B54879 /* ChapterOne */,
-				210811D7203EFF2400B54879 /* main.swift */,
-				218634522044FC7100257E34 /* CLHelper.swift */,
-			);
-			path = OpenCLStudy;
-			sourceTree = "<group>";
-		};
-		210811E0203F00A400B54879 /* ChapterOne */ = {
-			isa = PBXGroup;
-			children = (
-				210811DE203F008200B54879 /* matvec.cl */,
-				210811E1203F00F700B54879 /* matvec.swift */,
-			);
-			path = ChapterOne;
 			sourceTree = "<group>";
 		};
 		21325FB520484B640018D740 /* Utils */ = {
@@ -208,33 +146,12 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
-		2150AF66204009EB00BCAE24 /* ChapterTwo */ = {
-			isa = PBXGroup;
-			children = (
-				2150AF6720400A0A00BCAE24 /* platform_ext_text.swift */,
-				2150AF6C2040335400BCAE24 /* device_ext_test.swift */,
-				2150AF6E2043BC3900BCAE24 /* context_count.swift */,
-				2150AF752043E15700BCAE24 /* program_build.swift */,
-				218634482044252E00257E34 /* kernel_search */,
-			);
-			path = ChapterTwo;
-			sourceTree = "<group>";
-		};
 		2150AF6920402C4E00BCAE24 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				2150AF6A20402C4E00BCAE24 /* OpenCL.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		218634482044252E00257E34 /* kernel_search */ = {
-			isa = PBXGroup;
-			children = (
-				218634492044254300257E34 /* test.cl */,
-				21863446204424F800257E34 /* kernel_search.swift */,
-			);
-			path = kernel_search;
 			sourceTree = "<group>";
 		};
 		2186348D2045710300257E34 /* CLSwift */ = {
@@ -309,23 +226,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		210811D3203EFF2400B54879 /* OpenCLStudy */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 210811DB203EFF2400B54879 /* Build configuration list for PBXNativeTarget "OpenCLStudy" */;
-			buildPhases = (
-				210811D0203EFF2400B54879 /* Sources */,
-				210811D1203EFF2400B54879 /* Frameworks */,
-				210811D2203EFF2400B54879 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OpenCLStudy;
-			productName = OpenCLStudy;
-			productReference = 210811D4203EFF2400B54879 /* OpenCLStudy */;
-			productType = "com.apple.product-type.tool";
-		};
 		2186348B2045710300257E34 /* CLSwift */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2186349D2045710300257E34 /* Build configuration list for PBXNativeTarget "CLSwift" */;
@@ -391,12 +291,9 @@
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = MockingBot;
 				TargetAttributes = {
-					210811D3203EFF2400B54879 = {
-						CreatedOnToolsVersion = 9.3;
-						ProvisioningStyle = Automatic;
-					};
 					2186348B2045710300257E34 = {
 						CreatedOnToolsVersion = 9.3;
+						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
 					};
 					218634932045710300257E34 = {
@@ -422,7 +319,6 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				210811D3203EFF2400B54879 /* OpenCLStudy */,
 				2186348B2045710300257E34 /* CLSwift */,
 				218634932045710300257E34 /* CLSwiftTests */,
 				218634AB204595B800257E34 /* Demo */,
@@ -457,24 +353,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		210811D0203EFF2400B54879 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2186344A2044254300257E34 /* test.cl in Sources */,
-				210811E2203F00F700B54879 /* matvec.swift in Sources */,
-				210811D8203EFF2400B54879 /* main.swift in Sources */,
-				210811DF203F008300B54879 /* matvec.cl in Sources */,
-				2150AF6F2043BC3900BCAE24 /* context_count.swift in Sources */,
-				21863447204424F800257E34 /* kernel_search.swift in Sources */,
-				2150AF6D2040335400BCAE24 /* device_ext_test.swift in Sources */,
-				2150AF762043E15700BCAE24 /* program_build.swift in Sources */,
-				2186345A2045413000257E34 /* Extensions.swift in Sources */,
-				218634532044FC7100257E34 /* CLHelper.swift in Sources */,
-				2150AF6820400A0A00BCAE24 /* platform_ext_text.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		218634872045710300257E34 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -649,29 +527,10 @@
 			};
 			name = Release;
 		};
-		210811DC203EFF2400B54879 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = TCU9L9SQC4;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-			};
-			name = Debug;
-		};
-		210811DD203EFF2400B54879 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = TCU9L9SQC4;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
-			};
-			name = Release;
-		};
 		2186349E2045710300257E34 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -689,6 +548,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.MockingBot.CLSwift;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -698,6 +558,7 @@
 		2186349F2045710300257E34 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -793,15 +654,6 @@
 			buildConfigurations = (
 				210811D9203EFF2400B54879 /* Debug */,
 				210811DA203EFF2400B54879 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		210811DB203EFF2400B54879 /* Build configuration list for PBXNativeTarget "OpenCLStudy" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				210811DC203EFF2400B54879 /* Debug */,
-				210811DD203EFF2400B54879 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
