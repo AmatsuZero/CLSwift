@@ -117,7 +117,6 @@ public final class CLProgram {
     }
 
     public struct CLBuildInfo {
-
         private let program: cl_program
         private let device: cl_device_id?
         public var status: CLBuildStatus? {
@@ -214,18 +213,9 @@ public final class CLProgram {
 
     @discardableResult
     func build(options: Set<CLProgramBuildOption>? = nil,
-               devices: [CLDevice],
+               devices: [CLDevice]? = nil,
                userData: [String: Any]? = nil,
                callback: CLBuildProgramCallBack? = nil) -> Bool {
-        guard !devices.isEmpty else {
-            callback?(false,
-                      NSError(domain: "com.daubert.OpenCL.Program",
-                              code: -100,
-                              userInfo: [NSLocalizedDescriptionKey: "没有设备"]),
-                      userData,
-                      nil)
-            return false
-        }
         let optionsString = options?.isEmpty == false
             ? options!.map { $0.string }.reduce("") { $0.appending("\($1) ") }
             : nil
@@ -233,21 +223,21 @@ public final class CLProgram {
             DispatchQueue.global().async { [weak self] in
                 guard let strongSelf = self else { return }
                 let code = clBuildProgram(strongSelf.program,
-                                          cl_uint(devices.count),
-                                          devices.map { $0.deviceId },
+                                          cl_uint(devices?.count ?? 0),
+                                          devices == nil ? nil : devices?.map { $0.deviceId },
                                           optionsString,
                                           nil,
                                           nil)
                 cb(code == CL_SUCCESS,
                    programError(code),
                    userData,
-                   devices.map { CLBuildInfo(program: strongSelf.program, device: $0.deviceId) })
+                   devices?.map { CLBuildInfo(program: strongSelf.program, device: $0.deviceId) })
             }
             return false
         } else {
             return clBuildProgram(program,
-                                  cl_uint(devices.count),
-                                  devices.map { $0.deviceId },
+                                  cl_uint(devices?.count ?? 0),
+                                  devices == nil ? nil : devices?.map { $0.deviceId },
                                   optionsString,
                                   nil,
                                   nil) == CL_SUCCESS

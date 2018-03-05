@@ -22,6 +22,7 @@
 		218905AB204954C100352104 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AA204954C100352104 /* FileDownloader.swift */; };
 		218905AD20496B1100352104 /* CLCommandQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AC20496B1100352104 /* CLCommandQueue.swift */; };
 		218905AF204A2F3900352104 /* CLKernelData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905AE204A2F3900352104 /* CLKernelData.swift */; };
+		218905B1204CF99400352104 /* CLEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218905B0204CF99400352104 /* CLEvent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		218905AA204954C100352104 /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 		218905AC20496B1100352104 /* CLCommandQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLCommandQueue.swift; sourceTree = "<group>"; };
 		218905AE204A2F3900352104 /* CLKernelData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLKernelData.swift; sourceTree = "<group>"; };
+		218905B0204CF99400352104 /* CLEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLEvent.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +153,7 @@
 				218905A82049544600352104 /* CLKernel.swift */,
 				218905AC20496B1100352104 /* CLCommandQueue.swift */,
 				218905AE204A2F3900352104 /* CLKernelData.swift */,
+				218905B0204CF99400352104 /* CLEvent.swift */,
 			);
 			path = CLClasses;
 			sourceTree = "<group>";
@@ -272,6 +275,7 @@
 				218905A92049544600352104 /* CLKernel.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
+				218905B1204CF99400352104 /* CLEvent.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
 				218905AF204A2F3900352104 /* CLKernelData.swift in Sources */,

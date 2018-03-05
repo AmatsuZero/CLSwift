@@ -79,62 +79,29 @@ public final class CLContext {
                 devices: [CLDevice],
                 userData: [String: Any]? = nil,
                 callBack: CLCreateContextCallBack? = nil) {
-        if let cb = callBack {
-            DispatchQueue.global().async { [weak self] in
-                var errCode: cl_int = 0
-                guard let strongSelf = self else { return }
-                strongSelf.context = clCreateContext(props, cl_uint(devices.count),
-                                                     devices.map { $0.deviceId },
-                                                     nil,
-                                                     nil,
-                                                     &errCode)
-                strongSelf.properties = props
-                strongSelf._devices = devices
-                guard errCode == CL_SUCCESS else {
-                    cb(false, contextError(errCode, userData))
-                    return
-                }
-                cb(true, nil)
-            }
-        } else {
-            context = clCreateContext(props, cl_uint(devices.count),
-                                      devices.map { $0.deviceId },
-                                      nil,
-                                      nil,
-                                      nil)
-            properties = props
-            _devices = devices
-        }
+        var errCode: cl_int = 0
+        context = clCreateContext(props, cl_uint(devices.count),
+                                  devices.map { $0.deviceId },
+                                  nil,
+                                  nil,
+                                  &errCode)
+        properties = props
+        _devices = devices
+        callBack?(errCode == CL_SUCCESS, contextError(errCode, userData))
     }
 
     public init(contextProperties props: [cl_context_properties]? = nil,
                 deviceType: CLDevice.CLDeviceType,
                 userData: [String: Any]? = nil,
                 callBack: CLCreateContextCallBack? = nil) {
-        if let cb = callBack {
-            DispatchQueue.global().async { [weak self] in
-                var errCode: cl_int = 0
-                guard let strongSelf = self else { return }
-                strongSelf.context = clCreateContextFromType(props,
-                                                  deviceType.value,
-                                                  nil,
-                                                  nil,
-                                                  &errCode)
-                strongSelf.properties = props
-                guard errCode == CL_SUCCESS else {
-                    cb(false, contextError(errCode, userData))
-                    return
-                }
-                cb(true, nil)
-            }
-        } else {
-            context = clCreateContextFromType(props,
-                                              deviceType.value,
-                                              nil,
-                                              nil,
-                                              nil)
-            properties = props
-        }
+        var errCode: cl_int = 0
+        context = clCreateContextFromType(props,
+                                          deviceType.value,
+                                          nil,
+                                          nil,
+                                          &errCode)
+        properties = props
+        callBack?(errCode == CL_SUCCESS, contextError(errCode, userData))
     }
     
     deinit {

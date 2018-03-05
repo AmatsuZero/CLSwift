@@ -54,19 +54,57 @@ public class CLKernelData {
             return cl_mem_flags(rawValue)
         }
     }
+    public struct CLBufferOrigin {
+        private(set) var originArray = [Int](repeating: 0, count: 3)
+        var x: Int {
+            set(newValue) { originArray[0] = newValue }
+            get { return originArray[0] }
+        }
+        var y: Int {
+            set(newValue) { originArray[1] = newValue }
+            get { return originArray[1] }
+        }
+        var z: Int {
+            set(newValue) { originArray[2] = newValue }
+            get { return originArray[2] }
+        }
+        init(x: Int, y: Int, z: Int) {
+            originArray = [x, y, z]
+        }
+    }
+    public struct CLBufferRegion {
+        private(set) var regionArray = [Int](repeating: 0, count: 3)
+        var width: Int {
+            set(newValue) { regionArray[0] = newValue }
+            get { return regionArray[0] }
+        }
+        var height: Int {
+            set(newValue) { regionArray[1] = newValue }
+            get { return regionArray[1] }
+        }
+        var depth: Int {
+            set(newValue) { regionArray[2] = newValue }
+            get { return regionArray[2] }
+        }
+        init(width: Int, height: Int, depth: Int) {
+            regionArray = [width, height, depth]
+        }
+    }
     let context: CLContext
     let memFlags: CLMemFlags
     var mem: cl_mem?
+    var data: [Any]?
     var size: size_t? {
         return try? integerValue(type: CL_MEM_SIZE)
     }
     var offset: size_t? {
         return try? integerValue(type: CL_MEM_OFFSET)
     }
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ data: [Any]?) {
         mem = memObj
         memFlags = flags
         self.context = context
+        self.data = data
     }
     
     fileprivate func integerValue(type: Int32) throws -> Int {
@@ -94,6 +132,10 @@ public class CLKernelData {
         clGetMemObjectInfo(mem, cl_mem_info(type), actualSize, &value, nil)
         return value
     }
+
+    deinit {
+        clReleaseMemObject(mem)
+    }
 }
 
 public final class CLKernelBuffer: CLKernelData {
@@ -102,20 +144,20 @@ public final class CLKernelBuffer: CLKernelData {
          flags: CLMemFlags,
          hostBuffer vec: [Any]?) throws {
         var err: cl_int = 0
-        var buffer = vec
+        var data = vec
         let mem = clCreateBuffer(context.context,
                                  flags.value,
                                  MemoryLayout.stride(ofValue: vec),
-                                 &buffer,
+                                 &data,
                                  &err)
         guard err == CL_SUCCESS else {
             throw bufferError(err)
         }
-        super.init(flags, mem, context)
+        super.init(flags, mem, context, vec)
     }
     
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
-        super.init(flags, memObj, context)
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: [Any]?) {
+        super.init(flags, memObj, context, ptr)
     }
     
     func subBuffer(flags: CLMemFlags,
@@ -131,11 +173,7 @@ public final class CLKernelBuffer: CLKernelData {
         guard errCode == CL_SUCCESS else {
             throw bufferError(errCode)
         }
-        return CLKernelBuffer(flags, subMem, context)
-    }
-    
-    deinit {
-        clReleaseMemObject(mem)
+        return CLKernelBuffer(flags, subMem, context, nil)
     }
 }
 
@@ -349,28 +387,29 @@ public final class CLKernelImageBuffer: CLKernelData {
     }
     private(set) var format: CLImageFormat?
     private(set) var desc: CLImageDesc?
-    var elementSize: size_t? {
-        return try? integerValue(type: CL_IMAGE_ELEMENT_SIZE)
-    }
+    var elementSize: size_t? { return try? integerValue(type: CL_IMAGE_ELEMENT_SIZE) }
+    var rowPitch: Int? { return desc?.rowPitch }
+    var slicePitch: Int? { return desc?.slicePitch }
     init(context: CLContext,
          flags: CLMemFlags,
          desc: CLImageDesc,
          format: CLImageFormat,
-         data: inout [Any]?) throws {
+         data: [Any]?) throws {
         var errCode: cl_int = 0
         self.format = format
         self.desc = desc
+        var vec = data
         let mem = clCreateImage(context.context,
                                 flags.value,
                                 &self.format!.format,
                                 &self.desc!.desc,
-                                &data,
+                                &vec,
                                 &errCode)
-        super.init(flags, mem, context)
+        super.init(flags, mem, context, data)
     }
     
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext) {
-        super.init(flags, memObj, context)
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: [Any]?) {
+        super.init(flags, memObj, context, ptr)
     }
     
     override func integerValue(type: Int32) throws -> Int {
