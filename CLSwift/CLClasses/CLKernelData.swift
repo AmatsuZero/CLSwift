@@ -112,6 +112,7 @@ public class CLKernelData {
     var offset: size_t? {
         return try? integerValue(type: CL_MEM_OFFSET)
     }
+
     required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ data: UnsafeMutableRawPointer?) {
         mem = memObj
         memFlags = flags
@@ -132,7 +133,7 @@ public class CLKernelData {
         return value
     }
     
-    fileprivate func ptrValue(type: Int32) throws -> OpaquePointer? {
+    fileprivate func ptrValue(type: Int32) throws -> UnsafeMutableRawPointer {
         var actualSize = 0
         let code = clGetMemObjectInfo(mem,
                                       cl_mem_info(type),
@@ -140,37 +141,38 @@ public class CLKernelData {
                                       nil,
                                       &actualSize)
         guard code == CL_SUCCESS else { throw bufferError(code) }
-        var value: OpaquePointer? = nil
+        var value: UnsafeMutableRawPointer!
         clGetMemObjectInfo(mem, cl_mem_info(type), actualSize, &value, nil)
         return value
     }
 
     deinit {
+        data?.deallocate()
         clReleaseMemObject(mem)
     }
 }
 
 public final class CLKernelBuffer: CLKernelData {
-    
-    init(context: CLContext,
+    init<T>(context: CLContext,
          flags: CLMemFlags,
-         hostBuffer data: UnsafeMutableRawPointer?) throws {
+         hostBuffer data: [T]?) throws {
         var err: cl_int = 0
+        let ptr = UnsafeMutableRawPointer(mutating: data)
         let mem = clCreateBuffer(context.context,
                                  flags.value,
                                  MemoryLayout.stride(ofValue: data),
-                                 data,
+                                 ptr,
                                  &err)
         guard err == CL_SUCCESS else {
             throw bufferError(err)
         }
-        super.init(flags, mem, context, data)
+        super.init(flags, mem, context, ptr)
     }
     
     required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeMutableRawPointer?) {
         super.init(flags, memObj, context, ptr)
     }
-    
+
     func subBuffer(flags: CLMemFlags,
                    origin start: Int,
                    size end: Int) throws -> CLKernelBuffer {
@@ -184,7 +186,8 @@ public final class CLKernelBuffer: CLKernelData {
         guard errCode == CL_SUCCESS else {
             throw bufferError(errCode)
         }
-        return CLKernelBuffer(flags, subMem, context, nil)
+        let ptr = try ptrValue(type: CL_MEM_HOST_PTR)
+        return CLKernelBuffer(flags, subMem, context, ptr)
     }
 }
 
@@ -405,18 +408,19 @@ public final class CLKernelImageBuffer: CLKernelData {
          flags: CLMemFlags,
          desc: CLImageDesc,
          format: CLImageFormat,
-         data: UnsafeMutableRawPointer?) throws {
+         data: Any?) throws {
         var errCode: cl_int = 0
         self.format = format
         self.desc = desc
-        var vec = data
+        let vec = UnsafeMutableRawPointer.allocate(byteCount: MemoryLayout.size(ofValue: data),
+                                                   alignment: MemoryLayout.alignment(ofValue: data))
         let mem = clCreateImage(context.context,
                                 flags.value,
                                 &self.format!.format,
                                 &self.desc!.desc,
-                                &vec,
+                                vec,
                                 &errCode)
-        super.init(flags, mem, context, data)
+        super.init(flags, mem, context, vec)
     }
     
     required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeMutableRawPointer?) {

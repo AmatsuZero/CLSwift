@@ -74,7 +74,7 @@ public final class CLKernel {
     func setArgument(at index: UInt32, value: CLKernelData) throws -> Bool {
         let code = clSetKernelArg(kernel,
                                   index,
-                                  MemoryLayout.size(ofValue: value.mem),
+                                  value.size ?? 0,
                                   value.data)
         guard code == CL_SUCCESS else {
             throw kernelError(code)
@@ -102,7 +102,7 @@ public final class CLKernel {
         }
         var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
         defer {
-            charBuffer.deallocate(capacity: actualSize)
+            charBuffer.deallocate()
         }
         clGetKernelInfo(kernel, cl_kernel_info(type), actualSize, charBuffer, nil)
         return String(cString: charBuffer)

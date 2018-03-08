@@ -110,7 +110,7 @@ public final class CLDevice {
         }
         var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
         defer {
-            charBuffer.deallocate(capacity: actualSize)
+            charBuffer.deallocate()
         }
         clGetDeviceInfo(deviceId, cl_device_info(type), actualSize, charBuffer, nil)
         return String(cString: charBuffer)

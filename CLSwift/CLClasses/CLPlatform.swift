@@ -88,7 +88,7 @@ public final class CLPlatform {
         }
         var infoBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: size)
         defer {
-            infoBuffer.deallocate(capacity: size)
+            infoBuffer.deallocate()
         }
         clGetPlatformInfo(platformId, cl_platform_info(type), size, infoBuffer, nil)
         return String(cString: infoBuffer)

@@ -159,7 +159,7 @@ public final class CLProgram {
             }
             var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
             defer {
-                charBuffer.deallocate(capacity: actualSize)
+                charBuffer.deallocate()
             }
             clGetProgramInfo(program, cl_program_info(type), actualSize, charBuffer, nil)
             return String(cString: charBuffer)

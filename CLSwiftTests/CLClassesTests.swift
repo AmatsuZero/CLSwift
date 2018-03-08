@@ -81,77 +81,6 @@ class CLClassesTests: XCTestCase {
         wait(for: [buildComplete], timeout: 100)
     }
 
-    func testKernels() {
-        guard let ctx = try? CLContext(deviceType: .GPU) else {
-            return XCTFail("未能创建上下文")
-        }
-        let path = "/Users/modao/Downloads/source_code_gnu/Ch3/buffer_test/blank.cl"
-        let files = [path]
-        files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
-        var bufferSize = [Int]()
-        var buffer = [UnsafePointer<Int8>?]()
-        for file in files {
-            if let (size, charBuffer) = try? file.toDataBuffer() {
-                bufferSize.append(size)
-                buffer.append(charBuffer)
-            }
-        }
-        guard let program = try? CLProgram(context: ctx,
-                                           buffers: &buffer,
-                                           sizes: &bufferSize) else {
-                                            XCTFail("未能创建Program")
-                                            return
-        }
-        XCTAssertNotNil(ctx.devices, "没有找到设备")
-        let buildComplete = XCTestExpectation(description: "Program build result")
-        let enqueueWrite = XCTestExpectation(description: "Buffer wirte")
-        let enqueueRead = XCTestExpectation(description: "Buffer read")
-        var fullMatrix = [Float](repeating: 0, count: 80)
-        for i in 0..<fullMatrix.count {
-            fullMatrix[i] = Float(i)
-        }
-        var zeroMatrix = [Float](repeating: 0, count: 80)
-        program.build() { isSuccess, error, userData, info in
-            guard isSuccess else {
-                return XCTAssert(isSuccess, "未能成功编译: \(error?.localizedDescription ?? "Unknown"))")
-            }
-            print(info?.first?.options ?? "")
-            guard let kernel = try? CLKernel(name: "blank", program: program) else {
-                XCTFail("未能成功创建内核")
-                return
-            }
-            do {
-                var fx = fullMatrix as [Any]?
-                let matrixBuffer = try CLKernelBuffer(context: ctx, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: &fx)
-                try kernel.setArgument(at: 0, value: matrixBuffer)
-                let queue = try CLCommandQueue(context: ctx, device: ctx.devices!.first!, properties: .ProfileEnable)
-                try queue.enqueueTask(kernel: kernel)
-                let write: CLCommandQueue.CLCommandBufferOperation = .WriteBuffer(0)
-                queue.enqueueBuffer(buffer: matrixBuffer, operation: write, host: &fullMatrix) { isSuccess, error, event in
-                    guard isSuccess else {
-                        return XCTAssert(isSuccess, error?.localizedDescription ?? "Unknown")
-                    }
-                    if isSuccess {
-                        let bufferOrigin = CLKernelData.CLBufferOrigin(x: 5*MemoryLayout<Float>.stride, y: 3, z: 0)
-                        let hostOrigin = CLKernelData.CLBufferOrigin(x: MemoryLayout<Float>.stride, y: 1, z: 0)
-                        let region = CLKernelData.CLBufferRegion(width: 4*MemoryLayout<Float>.stride, height: 4, depth: 1)
-                        let read: CLCommandQueue.CLCommandBufferOperation = .ReadBufferRect(bufferOrigin, hostOrigin, region, (10*MemoryLayout<Float>.stride, 0), (10*MemoryLayout<Float>.stride, 0))
-                        queue.enqueueBuffer(buffer: matrixBuffer, operation: read, host: &zeroMatrix) { isSuccess, error, event in
-                            XCTAssert(isSuccess, error?.localizedDescription ?? "Unknown")
-                            zeroMatrix.forEach { print($0) }
-                            enqueueRead.fulfill()
-                        }
-                    }
-                    enqueueWrite.fulfill()
-                }
-            } catch (let error) {
-                XCTAssert(false, error.localizedDescription)
-            }
-            buildComplete.fulfill()
-        }
-        wait(for: [buildComplete, enqueueWrite, enqueueRead], timeout: 100)
-    }
-
     func testMapCopy() {
         guard let organizer = try? CLOrganizer(num_entries: 1), let platform = organizer.platforms.first else {
             return XCTFail("未能发现平台")
@@ -180,14 +109,41 @@ class CLClassesTests: XCTestCase {
         guard let kernel = try? CLKernel(name: "blank", program: program) else {
             return XCTFail("未能创建内核")
         }
-        guard let bufferOne = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: &dataOne) else {
+
+        guard let bufferOne = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: dataOne) else {
             return XCTFail("未能创建 Buffer one")
         }
-        guard let bufferTwo = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: &dataTwo) else {
+
+        guard let bufferTwo = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: dataTwo) else {
             return XCTFail("未能创建 Buffer Two")
         }
         XCTAssert((try? kernel.setArgument(at: 0, value: bufferOne)) == true, "设置参数0失败")
         XCTAssert((try? kernel.setArgument(at: 1, value: bufferTwo)) == true, "设置参数1失败")
+        guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
+            return XCTFail("未能创建空值队列")
+        }
+        do {
+            try queue.enqueueTask(kernel: kernel)
+        } catch(let e) {
+            XCTFail(e.localizedDescription)
+        }
+        let copyCommand = CLCommandQueue.CLCommandBufferOperation.CopyBuffer(bufferTwo, 0, 0)
+        XCTAssert(queue.enqueueBuffer(buffer: bufferOne, operation: copyCommand), "拷贝内存失败")
+
+        let mapCommand = CLCommandQueue.CLCommandBufferOperation.MapBuffer(0, [.READ])
+        guard let mappedMemory = try? queue.mapBuffer(buffer: bufferTwo, operation: mapCommand) else {
+            return XCTFail("映射内存失败")
+        }
+        memcpy(&resultArray, mappedMemory, MemoryLayout.size(ofValue: dataTwo))
+        var returnedValue = [Float]()
+        let unmap = CLCommandQueue.CLCommandBufferOperation.UnmapBuffer(&returnedValue)
+        XCTAssert(queue.enqueueBuffer(buffer: bufferTwo, operation: unmap), "取消映射失败")
+        for i in 0..<10 {
+            for j in 0..<10 {
+                print(resultArray[j+i*10])
+            }
+            print("==========")
+        }
     }
 }
 
