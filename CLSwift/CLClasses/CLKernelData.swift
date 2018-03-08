@@ -54,6 +54,18 @@ public class CLKernelData {
             return cl_mem_flags(rawValue)
         }
     }
+    public struct CLMapFlags: OptionSet {
+        public var rawValue: Int32
+        public static let READ = CLMapFlags(rawValue: CL_MAP_READ)
+        public static let WRITE = CLMapFlags(rawValue: CL_MAP_WRITE)
+        public static let WRITE_INVALID_REGION = CLMapFlags(rawValue: CL_MAP_WRITE_INVALIDATE_REGION)
+        public init(rawValue: Int32) {
+            self.rawValue = rawValue
+        }
+        var value: cl_map_flags {
+            return cl_map_flags(rawValue)
+        }
+    }
     public struct CLBufferOrigin {
         private(set) var originArray = [Int](repeating: 0, count: 3)
         var x: Int {
@@ -93,14 +105,14 @@ public class CLKernelData {
     let context: CLContext
     let memFlags: CLMemFlags
     var mem: cl_mem?
-    var data: [Any]?
+    var data: UnsafeMutableRawPointer?
     var size: size_t? {
         return try? integerValue(type: CL_MEM_SIZE)
     }
     var offset: size_t? {
         return try? integerValue(type: CL_MEM_OFFSET)
     }
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ data: [Any]?) {
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ data: UnsafeMutableRawPointer?) {
         mem = memObj
         memFlags = flags
         self.context = context
@@ -142,21 +154,20 @@ public final class CLKernelBuffer: CLKernelData {
     
     init(context: CLContext,
          flags: CLMemFlags,
-         hostBuffer vec: [Any]?) throws {
+         hostBuffer data: UnsafeMutableRawPointer?) throws {
         var err: cl_int = 0
-        var data = vec
         let mem = clCreateBuffer(context.context,
                                  flags.value,
-                                 MemoryLayout.stride(ofValue: vec),
-                                 &data,
+                                 MemoryLayout.stride(ofValue: data),
+                                 data,
                                  &err)
         guard err == CL_SUCCESS else {
             throw bufferError(err)
         }
-        super.init(flags, mem, context, vec)
+        super.init(flags, mem, context, data)
     }
     
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: [Any]?) {
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeMutableRawPointer?) {
         super.init(flags, memObj, context, ptr)
     }
     
@@ -394,7 +405,7 @@ public final class CLKernelImageBuffer: CLKernelData {
          flags: CLMemFlags,
          desc: CLImageDesc,
          format: CLImageFormat,
-         data: [Any]?) throws {
+         data: UnsafeMutableRawPointer?) throws {
         var errCode: cl_int = 0
         self.format = format
         self.desc = desc
@@ -408,7 +419,7 @@ public final class CLKernelImageBuffer: CLKernelData {
         super.init(flags, mem, context, data)
     }
     
-    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: [Any]?) {
+    required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeMutableRawPointer?) {
         super.init(flags, memObj, context, ptr)
     }
     

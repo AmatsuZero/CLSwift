@@ -68,6 +68,9 @@ public final class CLCommandQueue {
     }
 
     public enum CLCommandBufferOperation {
+
+        public typealias mapBufferCallback = (Int32, UnsafeMutableRawPointer?) -> Void
+
         case ReadBuffer(Int)
         case WriteBuffer(Int)
         case CopyBuffer(CLKernelBuffer, Int, Int)
@@ -77,6 +80,9 @@ public final class CLCommandQueue {
         case ReadBufferRect(CLKernelData.CLBufferOrigin, CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, (rowPitch: Int, slicePitch: Int), (rowPitch: Int, slicePitch: Int))
         case WriteBufferRect(CLKernelData.CLBufferOrigin, CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, (rowPitch: Int, slicePitch: Int), (rowPitch: Int, slicePitch: Int))
         case CopyBufferRect(CLKernelBuffer, CLKernelData.CLBufferOrigin, CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, (rowPitch: Int, slicePitch: Int), (rowPitch: Int, slicePitch: Int))
+        case MapBuffer(Int, CLKernelData.CLMapFlags, mapBufferCallback?)
+        case MapImage(CLKernelData.CLMapFlags, CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, UnsafeMutablePointer<Int>,  UnsafeMutablePointer<Int>, mapBufferCallback?)
+        case UnmapBuffer(UnsafeMutableRawPointer)
     }
 
     init(context: CLContext, device: CLDevice, properties: CLCommandProperties) throws {
@@ -118,7 +124,7 @@ public final class CLCommandQueue {
         case .CopyBuffer(let distMem, let srcOffset, let dstOffset):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueCopyBuffer(strongSelf.queue, buffer.mem, distMem.mem, srcOffset, dstOffset, MemoryLayout.size(ofValue: host),
                                                cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -130,7 +136,7 @@ public final class CLCommandQueue {
         case .WriteBuffer(let offset):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, MemoryLayout.size(ofValue: host),
                                                 host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -142,7 +148,7 @@ public final class CLCommandQueue {
         case .ReadBuffer(let offset):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, MemoryLayout.size(ofValue: host),
                                                host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -157,7 +163,7 @@ public final class CLCommandQueue {
             let regionArray = [region.width, region.height, region.depth]
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadImage(strongSelf.queue, data.mem, cl_bool(CL_TRUE), originArray, regionArray,
                                               slicePitch, rowPitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -170,7 +176,7 @@ public final class CLCommandQueue {
             guard let data = buffer as? CLKernelImageBuffer else { return false }
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteImage(strongSelf.queue, data.mem, cl_bool(CL_TRUE), origin.originArray, region.regionArray,
                                                rowPitch, slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -183,7 +189,7 @@ public final class CLCommandQueue {
             guard let data = buffer as? CLKernelImageBuffer else { return false }
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueCopyImage(strongSelf.queue, data.mem, distImage.mem, srcOrigin.originArray, distOrigin.originArray,
                                               region.regionArray, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -195,7 +201,7 @@ public final class CLCommandQueue {
         case .ReadBufferRect(let bufferOrigin, let hostOrigin, let region, let bufferSize, let hostSize):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadBufferRect(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                    bufferSize.rowPitch, bufferSize.slicePitch, hostSize.rowPitch, hostSize.slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -207,7 +213,7 @@ public final class CLCommandQueue {
         case .WriteBufferRect(let bufferOrigin, let hostOrigin, let region, let bufferSize, let hostSize):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteBufferRect(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                     bufferSize.rowPitch, bufferSize.slicePitch, hostSize.rowPitch, hostSize.slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -219,7 +225,7 @@ public final class CLCommandQueue {
         case .CopyBufferRect(let disBuffer, let bufferOrigin, let hostOrigin, let region, let srcSize, let distSize):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
-                    guard let strongSelf = self else { return }
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueCopyBufferRect(strongSelf.queue, buffer.mem, disBuffer.mem, bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                    srcSize.rowPitch, srcSize.slicePitch, distSize.rowPitch, distSize.slicePitch, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
@@ -227,6 +233,47 @@ public final class CLCommandQueue {
             } else {
                 code = clEnqueueCopyBufferRect(queue, buffer.mem, disBuffer.mem, bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                srcSize.rowPitch, srcSize.slicePitch, distSize.rowPitch, distSize.slicePitch, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
+            }
+        case .MapBuffer(let offset, let flags, let mapCB):
+            var errCode: cl_int = 0
+            if let cb = callBack {
+                DispatchQueue.global().async { [weak self] in
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
+                    let result = clEnqueueMapBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), flags.value,
+                                       offset, MemoryLayout.size(ofValue: host), cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
+                    mapCB?(errCode, result)
+                    cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
+                }
+            } else {
+                let result = clEnqueueMapBuffer(queue, buffer.mem, cl_bool(CL_TRUE), flags.value, offset, MemoryLayout.size(ofValue: host), cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
+                code = errCode
+                mapCB?(errCode, result)
+            }
+        case .MapImage(let flags, let origin, let region, let rowPitch, let slicePitch, let mapCB):
+            var errCode: cl_int = 0
+            if let cb = callBack {
+                DispatchQueue.global().async { [weak self] in
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
+                    let result = clEnqueueMapImage(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), flags.value, origin.originArray,
+                                      region.regionArray, rowPitch, slicePitch, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
+                    mapCB?(errCode, result)
+                    cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
+                }
+            } else {
+                let result = clEnqueueMapImage(queue, buffer.mem, cl_bool(CL_TRUE), flags.value, origin.originArray,
+                                  region.regionArray, rowPitch, slicePitch, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
+                code = errCode
+                mapCB?(errCode, result)
+            }
+        case .UnmapBuffer(let returnHost):
+            if let cb = callBack {
+                DispatchQueue.global().async { [weak self] in
+                    guard let strongSelf = self else { cb(false, nil , nil); return }
+                    code = clEnqueueUnmapMemObject(strongSelf.queue, buffer.mem, returnHost, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
+                    cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
+                }
+            } else {
+                code = clEnqueueUnmapMemObject(queue, buffer.mem, returnHost, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
             }
         }
         return code == CL_SUCCESS

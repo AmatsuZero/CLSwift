@@ -70,7 +70,8 @@ public final class CLKernel {
         _name = nil
     }
 
-    func setArgument(at index: UInt32, value: CLKernelData) throws {
+    @discardableResult
+    func setArgument(at index: UInt32, value: CLKernelData) throws -> Bool {
         let code = clSetKernelArg(kernel,
                                   index,
                                   MemoryLayout.size(ofValue: value.mem),
@@ -78,6 +79,7 @@ public final class CLKernel {
         guard code == CL_SUCCESS else {
             throw kernelError(code)
         }
+        return code == CL_SUCCESS
     }
     
     class func createKernels(program: CLProgram, num: UInt32 = 0) throws -> [CLKernel] {

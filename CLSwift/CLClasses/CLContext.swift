@@ -8,10 +8,9 @@
 
 import Foundation
 
-internal let contextError: (cl_int, [String: Any]?) -> NSError? = { (errType, desc) in
+internal let contextError: (cl_int, [String: Any]?) -> NSError = { (errType, desc) in
     var message = ""
     switch errType {
-    case CL_SUCCESS: return nil
     case CL_INVALID_PLATFORM:
         message = "platform is not a valid platform"
     case CL_INVALID_PROPERTY:
@@ -48,7 +47,6 @@ private var kErrorAssociatedObjectKey = "kCLCreateContextError"
 
 public final class CLContext {
 
-    public typealias CLCreateContextCallBack = (Bool, Error?) -> Void
     internal private(set) var context: cl_context!
     private var _devices: [CLDevice]?
     private var properties: [cl_context_properties]?
@@ -77,8 +75,7 @@ public final class CLContext {
     
     public init(contextProperties props: [cl_context_properties]? = nil,
                 devices: [CLDevice],
-                userData: [String: Any]? = nil,
-                callBack: CLCreateContextCallBack? = nil) {
+                userData: [String: Any]? = nil) throws {
         var errCode: cl_int = 0
         context = clCreateContext(props, cl_uint(devices.count),
                                   devices.map { $0.deviceId },
@@ -87,13 +84,14 @@ public final class CLContext {
                                   &errCode)
         properties = props
         _devices = devices
-        callBack?(errCode == CL_SUCCESS, contextError(errCode, userData))
+        guard errCode == CL_SUCCESS else {
+            throw contextError(errCode, userData)
+        }
     }
 
     public init(contextProperties props: [cl_context_properties]? = nil,
                 deviceType: CLDevice.CLDeviceType,
-                userData: [String: Any]? = nil,
-                callBack: CLCreateContextCallBack? = nil) {
+                userData: [String: Any]? = nil) throws {
         var errCode: cl_int = 0
         context = clCreateContextFromType(props,
                                           deviceType.value,
@@ -101,7 +99,9 @@ public final class CLContext {
                                           nil,
                                           &errCode)
         properties = props
-        callBack?(errCode == CL_SUCCESS, contextError(errCode, userData))
+        guard errCode == CL_SUCCESS else {
+            throw contextError(errCode, userData)
+        }
     }
     
     deinit {
