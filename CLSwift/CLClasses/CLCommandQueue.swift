@@ -95,6 +95,10 @@ public final class CLCommandQueue {
         }
     }
 
+    func divideData() {
+
+    }
+
     @discardableResult
     func enqueueTask(kernel: CLKernel, eventsAwait: [cl_event?]? = nil) throws -> cl_event? {
         var event: cl_event?
