@@ -180,8 +180,8 @@ public final class CLKernel {
     func setArgument(at index: UInt32, value: CLKernelData) throws -> Bool {
         let code = clSetKernelArg(kernel,
                                   index,
-                                  value.size ?? 0,
-                                  value.data)
+                                  MemoryLayout.size(ofValue: value.mem),
+                                  &value.mem)
         guard code == CL_SUCCESS else {
             throw kernelError(code)
         }
