@@ -68,7 +68,7 @@ public final class CLCommandQueue {
     }
 
     public enum CLCommandBufferOperation {
-        case ReadBuffer(Int, UnsafeMutablePointer<Int>)
+        case ReadBuffer(Int, Int?)
         case WriteBuffer(Int, Int)
         case CopyBuffer(CLKernelBuffer, Int, Int)
         case ReadImage(CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, Int, Int)
@@ -197,12 +197,12 @@ public final class CLCommandQueue {
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil); return }
-                    code = clEnqueueReadBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, readingSize.pointee,
+                    code = clEnqueueReadBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, readingSize ?? MemoryLayout.size(ofValue: host),
                                                host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
                 }
             } else {
-                code = clEnqueueReadBuffer(queue, buffer.mem, cl_bool(CL_TRUE), offset, readingSize.pointee,
+                code = clEnqueueReadBuffer(queue, buffer.mem, cl_bool(CL_TRUE), offset, readingSize ?? MemoryLayout.size(ofValue: host),
                                            host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
             }
         case .ReadImage(let origin, let region, let rowPitch, let slicePitch):

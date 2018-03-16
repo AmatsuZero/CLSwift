@@ -156,14 +156,14 @@ public final class CLKernelBuffer: CLKernelData {
     init(context: CLContext,
          flags: CLMemFlags,
          size: size_t,
-         hostBuffer data: UnsafeRawPointer!) throws {
+         hostBuffer data: UnsafeRawPointer?) throws {
         var err: cl_int = 0
-        let copyPtr = UnsafeMutableRawPointer.allocate(byteCount: size,
-                                                       alignment: MemoryLayout.alignment(ofValue: data))
+        let copyPtr: UnsafeMutableRawPointer? = data != nil ? UnsafeMutableRawPointer.allocate(byteCount: size,
+                                                                                               alignment: MemoryLayout.alignment(ofValue: data)) : nil
         let mem = clCreateBuffer(context.context,
                                  flags.value,
                                  size,
-                                 memcpy(copyPtr, data, size),
+                                 copyPtr != nil ? memcpy(copyPtr, data, size) : nil,
                                  &err)
         guard err == CL_SUCCESS else {
             throw bufferError(err)

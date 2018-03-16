@@ -91,16 +91,10 @@ class CLClassesTests: XCTestCase {
         guard let context = try? CLContext(devices: devices) else {
             return XCTFail("未能创建上下文")
         }
-        let path1 = "/Users/modao/Downloads/source_code_mac/Ch3/map_copy/blank.cl"
-        let files = [path1]
-        files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
-        var bufferSize = [Int]()
-        var buffer = [UnsafePointer<Int8>?]()
-        for file in files {
-            if let (size, charBuffer) = try? file.toDataBuffer() {
-                bufferSize.append(size)
-                buffer.append(charBuffer)
-            }
+        let files = ["/Users/modao/Downloads/source_code_mac/Ch3/map_copy/blank.cl"]
+        guard var (bufferSize, buffer) = try? files.kernelFileBuffer() else {
+            XCTFail("未能获取信息")
+            return
         }
         guard let program = try? CLProgram(context: context, buffers: &buffer, sizes: &bufferSize) else {
             return XCTFail("未能创建Program")
@@ -145,6 +139,51 @@ class CLClassesTests: XCTestCase {
             }
             print("==========")
         }
+    }
+
+    func testReadBuffer()  {
+        guard let organizer = try? CLOrganizer(num_entries: 1), let platform = organizer.platforms.first else {
+            return XCTFail("未能发现平台")
+        }
+        guard let devices = try? platform.devices(num_entries: 1, types: .GPU) else {
+            return XCTFail("未能访问设备")
+        }
+        guard let context = try? CLContext(devices: devices) else {
+            return XCTFail("未能创建上下文")
+        }
+        let files = ["/Users/modao/Downloads/source_code_mac/Ch4/hello_kernel/hello_kernel.cl"]
+        guard var (bufferSize, buffer) = try? files.kernelFileBuffer() else {
+            XCTFail("未能获取信息")
+            return
+        }
+        guard let program = try? CLProgram(context: context, buffers: &buffer, sizes: &bufferSize) else {
+            return XCTFail("未能创建Program")
+        }
+        XCTAssert(program.build(), "编译失败")
+        guard let kernel = try? CLKernel(name: "hello_kernel", program: program) else {
+            return XCTFail("未能创建内核")
+        }
+        XCTAssertNotNil(kernel.argInfo, "未能获取参数信息")
+        var msg = [cl_char](repeating: 0, count: 16)
+        let size = MemoryLayout<cl_char>.size*msg.count
+        guard let msgBuffer = try? CLKernelBuffer(context: context,
+                                                  flags: [.WRITE],
+                                                  size: size,
+                                                  hostBuffer: nil) else {
+            return XCTFail("未能创建字符串Buffer")
+        }
+        XCTAssert((try?  kernel.setArgument(at: 0, value: msgBuffer)) == true, "Kernel传值失败")
+        guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
+            return XCTFail("未能创建空值队列")
+        }
+        do {
+            try queue.enqueueTask(kernel: kernel)
+        } catch(let e) {
+            XCTFail(e.localizedDescription)
+        }
+        let read = CLCommandQueue.CLCommandBufferOperation.ReadBuffer(0, size)
+        XCTAssert(queue.enqueueBuffer(buffer: msgBuffer, operation: read, host: &msg), "添加Read Buffer失败")
+        print(String(cString: msg))
     }
 }
 

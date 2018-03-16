@@ -10,9 +10,8 @@
 		211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A8826204661AD00591C08 /* CLOranganizer.swift */; };
 		211A88292046CD7000591C08 /* CLProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A88282046CD7000591C08 /* CLProgram.swift */; };
 		211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 211A882C2046CF3A00591C08 /* StringFileExtenions.swift */; };
-		215CF20520551A140031CAE3 /* Sort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215CF20420551A140031CAE3 /* Sort.swift */; };
 		215CF20720551A320031CAE3 /* SortTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215CF20620551A320031CAE3 /* SortTest.swift */; };
-		215CF20920557B980031CAE3 /* BinaryTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215CF20820557B980031CAE3 /* BinaryTree.swift */; };
+		2177FFDC205B969C00057232 /* Sort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215CF20420551A140031CAE3 /* Sort.swift */; };
 		218634952045710300257E34 /* CLSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; };
 		2186349A2045710300257E34 /* CLClassesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 218634992045710300257E34 /* CLClassesTests.swift */; };
 		2186349C2045710300257E34 /* CLSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 2186348E2045710300257E34 /* CLSwift.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -45,7 +44,6 @@
 		2150AF6A20402C4E00BCAE24 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		215CF20420551A140031CAE3 /* Sort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sort.swift; sourceTree = "<group>"; };
 		215CF20620551A320031CAE3 /* SortTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortTest.swift; sourceTree = "<group>"; };
-		215CF20820557B980031CAE3 /* BinaryTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryTree.swift; sourceTree = "<group>"; };
 		2186345520450D8B00257E34 /* CLDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDevice.swift; sourceTree = "<group>"; };
 		2186345720451D1800257E34 /* CLPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLPlatform.swift; sourceTree = "<group>"; };
 		218634592045413000257E34 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -134,6 +132,7 @@
 		218634982045710300257E34 /* CLSwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				215CF20420551A140031CAE3 /* Sort.swift */,
 				218634992045710300257E34 /* CLClassesTests.swift */,
 				215CF20620551A320031CAE3 /* SortTest.swift */,
 				2186349B2045710300257E34 /* Info.plist */,
@@ -146,8 +145,6 @@
 			children = (
 				218634592045413000257E34 /* Extensions.swift */,
 				211A882C2046CF3A00591C08 /* StringFileExtenions.swift */,
-				215CF20420551A140031CAE3 /* Sort.swift */,
-				215CF20820557B980031CAE3 /* BinaryTree.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -287,12 +284,10 @@
 				218905B1204CF99400352104 /* CLEvent.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
 				211A8827204661AD00591C08 /* CLOranganizer.swift in Sources */,
-				215CF20920557B980031CAE3 /* BinaryTree.swift in Sources */,
 				218905AF204A2F3900352104 /* CLKernelData.swift in Sources */,
 				218905AB204954C100352104 /* FileDownloader.swift in Sources */,
 				218634C42045960300257E34 /* Extensions.swift in Sources */,
 				211A88292046CD7000591C08 /* CLProgram.swift in Sources */,
-				215CF20520551A140031CAE3 /* Sort.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,6 +297,7 @@
 			files = (
 				2186349A2045710300257E34 /* CLClassesTests.swift in Sources */,
 				215CF20720551A320031CAE3 /* SortTest.swift in Sources */,
+				2177FFDC205B969C00057232 /* Sort.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
