@@ -109,12 +109,13 @@ class CLClassesTests: XCTestCase {
         guard let kernel = try? CLKernel(name: "blank", program: program) else {
             return XCTFail("未能创建内核")
         }
-
-        guard let bufferOne = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: dataOne) else {
+        XCTAssertNotNil(kernel.argInfo, "未能获取参数信息")
+        var size = MemoryLayout<Float>.size*dataOne.count
+        guard let bufferOne = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], size: size, hostBuffer: dataOne) else {
             return XCTFail("未能创建 Buffer one")
         }
-
-        guard let bufferTwo = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], hostBuffer: dataTwo) else {
+        size = MemoryLayout<Float>.size*dataTwo.count
+        guard let bufferTwo = try? CLKernelBuffer(context: context, flags: [.READWRITE, .COPYHOSTPR], size: size, hostBuffer: dataTwo) else {
             return XCTFail("未能创建 Buffer Two")
         }
         XCTAssert((try? kernel.setArgument(at: 0, value: bufferOne)) == true, "设置参数0失败")
@@ -134,7 +135,7 @@ class CLClassesTests: XCTestCase {
         guard let mappedMemory = try? queue.mapBuffer(buffer: bufferTwo, operation: mapCommand) else {
             return XCTFail("映射内存失败")
         }
-        memcpy(&resultArray, mappedMemory, MemoryLayout.size(ofValue: dataTwo))
+        memcpy(&resultArray, mappedMemory, size)
         var returnedValue = [Float]()
         let unmap = CLCommandQueue.CLCommandBufferOperation.UnmapBuffer(&returnedValue)
         XCTAssert(queue.enqueueBuffer(buffer: bufferTwo, operation: unmap), "取消映射失败")

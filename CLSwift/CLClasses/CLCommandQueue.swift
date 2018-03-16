@@ -69,7 +69,7 @@ public final class CLCommandQueue {
 
     public enum CLCommandBufferOperation {
         case ReadBuffer(Int, UnsafeMutablePointer<Int>)
-        case WriteBuffer(Int)
+        case WriteBuffer(Int, Int)
         case CopyBuffer(CLKernelBuffer, Int, Int)
         case ReadImage(CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, Int, Int)
         case WriteImage(CLKernelData.CLBufferOrigin, CLKernelData.CLBufferRegion, Int, Int)
@@ -128,11 +128,11 @@ public final class CLCommandQueue {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil, nil); return }
                     result = clEnqueueMapBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), flags.value,
-                                                    offset, MemoryLayout.size(ofValue: buffer.data), cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
+                                                    offset, buffer.size ?? 0, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event, result)
                 }
             } else {
-                result = clEnqueueMapBuffer(queue, buffer.mem, cl_bool(CL_TRUE), flags.value, offset, MemoryLayout.size(ofValue: buffer.data),
+                result = clEnqueueMapBuffer(queue, buffer.mem, cl_bool(CL_TRUE), flags.value, offset, buffer.size ?? 0,
                                             cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event, &errCode)
                 code = errCode
             }
@@ -173,24 +173,24 @@ public final class CLCommandQueue {
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil); return }
-                    code = clEnqueueCopyBuffer(strongSelf.queue, buffer.mem, distMem.mem, srcOffset, dstOffset, MemoryLayout.size(ofValue: buffer.data),
+                    code = clEnqueueCopyBuffer(strongSelf.queue, buffer.mem, distMem.mem, srcOffset, dstOffset, buffer.size ?? 0,
                                                cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
                 }
             } else {
-                code = clEnqueueCopyBuffer(queue, buffer.mem, distMem.mem, srcOffset, dstOffset, MemoryLayout.size(ofValue: buffer.data),
+                code = clEnqueueCopyBuffer(queue, buffer.mem, distMem.mem, srcOffset, dstOffset, buffer.size ?? 0,
                                            cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
             }
-        case .WriteBuffer(let offset):
+        case .WriteBuffer(let offset, let size):
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil); return }
-                    code = clEnqueueWriteBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, MemoryLayout.size(ofValue: host),
+                    code = clEnqueueWriteBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_TRUE), offset, size,
                                                 host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), event)
                 }
             } else {
-                code = clEnqueueWriteBuffer(queue, buffer.mem, cl_bool(CL_TRUE), offset, MemoryLayout.size(ofValue: host),
+                code = clEnqueueWriteBuffer(queue, buffer.mem, cl_bool(CL_TRUE), offset, size,
                                             host, cl_uint(eventsAwait?.count ?? 0), eventsAwait, &event)
             }
         case .ReadBuffer(let offset, let readingSize):

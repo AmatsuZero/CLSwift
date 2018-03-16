@@ -33,6 +33,8 @@ private let kernelError: (cl_int) -> NSError = { type in
         message = "there is a failure to allocate resources required by the OpenCL implementation on the device"
     case CL_OUT_OF_HOST_MEMORY:
         message = "there is a failure to allocate resources required by the OpenCL implementation on the host"
+    case CL_INVALID_ARG_INDEX: message = "if arg_indx is not a valid argument index."
+    case CL_KERNEL_ARG_INFO_NOT_AVAILABLE: message = "if the argument information is not available for kernel"
     default:
         message = "Unknwon Error"
     }
@@ -52,6 +54,99 @@ public final class CLKernel {
     public var numOfArgs: UInt32? {
         return try? integerValue(CL_KERNEL_NUM_ARGS)
     }
+
+    public struct CLKernalArgInfo {
+        public enum CLKernelArgAddressQualifier: Int32 {
+            case global, local, constant, PRIVATE
+            public init(rawValue: Int32) {
+                switch rawValue {
+                case CL_KERNEL_ARG_ADDRESS_GLOBAL: self = .global
+                case CL_KERNEL_ARG_ADDRESS_LOCAL: self = .local
+                case CL_KERNEL_ARG_ADDRESS_CONSTANT: self = .constant
+                default: self = .PRIVATE
+                }
+            }
+            var value: cl_kernel_arg_address_qualifier {
+               return cl_kernel_arg_address_qualifier(rawValue)
+            }
+        }
+        public enum CLKernelArgAccessQualifier: Int32 {
+            case READ, WRITE, READWRITE, NONE
+            public init(rawValue: Int32) {
+                switch rawValue {
+                case CL_KERNEL_ARG_ACCESS_READ_ONLY: self = .READ
+                case CL_KERNEL_ARG_ACCESS_WRITE_ONLY: self = .WRITE
+                case CL_KERNEL_ARG_ACCESS_READ_WRITE: self = .READWRITE
+                default: self = .NONE
+                }
+            }
+            var value: cl_kernel_arg_access_qualifier {
+                return cl_kernel_arg_access_qualifier(rawValue)
+            }
+        }
+
+        public struct CLKernelArgTypeQualifier: OptionSet {
+            public let rawValue: Int32
+            public static let CONST = CLKernelArgTypeQualifier(rawValue: CL_KERNEL_ARG_TYPE_CONST)
+            public static let RESTRICT = CLKernelArgTypeQualifier(rawValue: CL_KERNEL_ARG_TYPE_RESTRICT)
+            public static let VOLATILE = CLKernelArgTypeQualifier(rawValue: CL_KERNEL_ARG_TYPE_VOLATILE)
+            public static let NONE = CLKernelArgTypeQualifier(rawValue: CL_KERNEL_ARG_TYPE_NONE)
+            public init(rawValue: Int32) {
+                self.rawValue = rawValue
+            }
+        }
+
+        public let addressQualifier: CLKernelArgAddressQualifier?
+        public let accessQualifier: CLKernelArgAccessQualifier?
+        public let typeQualifier: CLKernelArgTypeQualifier?
+        public let name: String?
+        public let type: String?
+
+        init(kernel: cl_kernel?, at index: UInt32) {
+            name = try? CLKernalArgInfo.stringValue(kernel: kernel, type: CL_KERNEL_ARG_NAME, at: index)
+            type = try? CLKernalArgInfo.stringValue(kernel: kernel, type: CL_KERNEL_ARG_TYPE_NAME, at: index)
+            if let code = try? CLKernalArgInfo.integerValue(kernel: kernel, type: CL_KERNEL_ARG_ADDRESS_QUALIFIER, at: index) {
+                addressQualifier = CLKernelArgAddressQualifier(rawValue: code)
+            } else {
+                addressQualifier = nil
+            }
+            if let code = try? CLKernalArgInfo.integerValue(kernel: kernel, type: CL_KERNEL_ARG_ACCESS_QUALIFIER, at: index) {
+                accessQualifier = CLKernelArgAccessQualifier(rawValue: code)
+            } else {
+                accessQualifier = nil
+            }
+            if let code = try? CLKernalArgInfo.integerValue(kernel: kernel, type: CL_KERNEL_ARG_TYPE_QUALIFIER, at: index) {
+                typeQualifier = CLKernelArgTypeQualifier(rawValue: code)
+            } else {
+                typeQualifier = nil
+            }
+        }
+
+        fileprivate static func stringValue(kernel: cl_kernel?, type: Int32, at index: UInt32) throws -> String {
+            var actualSize = 0
+            let code = clGetKernelArgInfo(kernel, index, cl_kernel_arg_info(type), Int.max, nil, &actualSize)
+            guard code == CL_SUCCESS else {
+                throw kernelError(code)
+            }
+            var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
+            defer {
+                charBuffer.deallocate()
+            }
+            clGetKernelArgInfo(kernel, index, cl_kernel_arg_info(type), actualSize, charBuffer, nil)
+            return String(cString: charBuffer)
+        }
+
+        fileprivate static func integerValue(kernel: cl_kernel?, type: Int32, at index: UInt32) throws -> Int32 {
+            var actualSize = 0
+            let code = clGetKernelArgInfo(kernel, index, cl_kernel_arg_info(type), Int.max, nil, &actualSize)
+            guard code == CL_SUCCESS else {
+                throw kernelError(code)
+            }
+            var addrDataPtr: cl_int = 0
+            clGetKernelArgInfo(kernel, index, cl_kernel_arg_info(type), actualSize, &addrDataPtr, nil)
+            return addrDataPtr
+        }
+    }
     
     init(name: String, program: CLProgram) throws {
         _name = name
@@ -68,6 +163,17 @@ public final class CLKernel {
         self.program = program
         self.kernel = kernel
         _name = nil
+    }
+
+    public var argInfo: [CLKernalArgInfo]? {
+        guard let count = numOfArgs else {
+            return nil
+        }
+        var infos = [CLKernalArgInfo]()
+        for index in 0..<count {
+            infos.append(CLKernel.CLKernalArgInfo(kernel: kernel, at: index))
+        }
+        return infos
     }
 
     @discardableResult
@@ -98,7 +204,7 @@ public final class CLKernel {
         var actualSize = 0
         let code = clGetKernelInfo(kernel, cl_kernel_info(type), 0, nil, &actualSize)
         guard code == CL_SUCCESS else {
-            throw deviceError(code)
+            throw kernelError(code)
         }
         var charBuffer = UnsafeMutablePointer<cl_char>.allocate(capacity: actualSize)
         defer {
@@ -107,12 +213,12 @@ public final class CLKernel {
         clGetKernelInfo(kernel, cl_kernel_info(type), actualSize, charBuffer, nil)
         return String(cString: charBuffer)
     }
-    
+
     fileprivate func integerValue(_ type: Int32) throws -> UInt32 {
         var actualSize = 0
         let code = clGetKernelInfo(kernel, cl_kernel_info(type), 0, nil, &actualSize)
         guard code == CL_SUCCESS else {
-            throw deviceError(code)
+            throw  kernelError(code)
         }
         var addrDataPtr: cl_uint = 0
         clGetKernelInfo(kernel, cl_kernel_info(type), actualSize, &addrDataPtr, nil)
