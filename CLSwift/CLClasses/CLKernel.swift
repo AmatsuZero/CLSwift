@@ -56,8 +56,9 @@ public final class CLKernel {
     }
 
     public struct CLKernalArgInfo {
-        public enum CLKernelArgAddressQualifier: Int32 {
+        public enum CLKernelArgAddressQualifier: Int32, CLInfoProtocol {
             case global, local, constant, PRIVATE
+            typealias valueType = cl_kernel_arg_address_qualifier
             public init(rawValue: Int32) {
                 switch rawValue {
                 case CL_KERNEL_ARG_ADDRESS_GLOBAL: self = .global
@@ -70,8 +71,9 @@ public final class CLKernel {
                return cl_kernel_arg_address_qualifier(rawValue)
             }
         }
-        public enum CLKernelArgAccessQualifier: Int32 {
+        public enum CLKernelArgAccessQualifier: Int32, CLInfoProtocol {
             case READ, WRITE, READWRITE, NONE
+            typealias valueType = cl_kernel_arg_access_qualifier
             public init(rawValue: Int32) {
                 switch rawValue {
                 case CL_KERNEL_ARG_ACCESS_READ_ONLY: self = .READ

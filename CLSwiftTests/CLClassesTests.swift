@@ -42,7 +42,7 @@ class CLClassesTests: XCTestCase {
     }
 
     func testContext() {
-        guard let ctx = try? CLContext(deviceType: .GPU) else {
+        guard let ctx = try? CLContext(deviceType: .CPU) else {
             return XCTFail("未能创建上下文")
         }
         let device = ctx.devices?.first!
@@ -54,17 +54,12 @@ class CLClassesTests: XCTestCase {
         guard let ctx = try? CLContext(deviceType: .GPU) else {
             return XCTFail("未能创建上下文")
         }
-        let path1 = "/Users/modao/Downloads/source_code_mac/Ch2/program_build/good.cl"
-        let path2 = "/Users/modao/Downloads/source_code_mac/Ch2/program_build/bad.cl"
-        let files = [path1, path2]
-        files.forEach { XCTAssert(FileManager.default.fileExists(atPath: $0), "没有找到文件") }
-        var bufferSize = [Int]()
-        var buffer = [UnsafePointer<Int8>?]()
-        for file in files {
-            if let (size, charBuffer) = try? file.toDataBuffer() {
-                bufferSize.append(size)
-                buffer.append(charBuffer)
-            }
+     
+        let files = ["/Users/modao/Downloads/source_code_mac/Ch2/program_build/good.cl",
+                     "/Users/modao/Downloads/source_code_mac/Ch2/program_build/bad.cl"]
+        guard var (bufferSize, buffer) = try? files.kernelFileBuffer() else {
+            XCTFail("未能获取信息")
+            return
         }
         guard let program = try? CLProgram(context: ctx,
                                            buffers: &buffer,
@@ -172,7 +167,7 @@ class CLClassesTests: XCTestCase {
                                                   hostBuffer: nil) else {
             return XCTFail("未能创建字符串Buffer")
         }
-        XCTAssert((try?  kernel.setArgument(at: 0, value: msgBuffer)) == true, "Kernel传值失败")
+        XCTAssert((try? kernel.setArgument(at: 0, value: msgBuffer)) == true, "Kernel传值失败")
         guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
             return XCTFail("未能创建空值队列")
         }
