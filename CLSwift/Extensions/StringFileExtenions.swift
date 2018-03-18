@@ -9,7 +9,7 @@
 import Foundation
 
 public extension String {
-
+    /// 获取cl文件大小/Buffer
     func toDataBuffer() throws -> (size: Int, charBuffer: UnsafePointer<Int8>?) {
         let data = try Data(contentsOf: URL(fileURLWithPath: self))
         return (data.count,

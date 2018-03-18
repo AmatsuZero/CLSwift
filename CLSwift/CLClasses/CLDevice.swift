@@ -163,6 +163,10 @@ public final class CLDevice {
     public private(set) lazy var constantBufferSize: UInt64? = {
         return try? longValue(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE)
     }()
+    /// 是否支持图像处理
+    public private(set) lazy var isImageSupport: Bool? = {
+        return try? integerValue(CL_DEVICE_IMAGE_SUPPORT) == CL_TRUE
+    }()
     public struct CLDeviceType: OptionSet, CLInfoProtocol {
         public let rawValue: Int32
         public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)

@@ -67,7 +67,7 @@ public final class CLProgram {
         public var hashValue: Int {
             switch self {
             case .CLVersion: return 0
-            case .D_NAME: return 1
+            case .D: return 1
             case .IncludeDir: return 2
             case .SuppressWarning: return 3
             case .TreatWarningAsError: return 4
@@ -82,7 +82,7 @@ public final class CLProgram {
             }
         }
         case CLVersion(String)
-        case D_NAME(String?)
+        case D(String, CVarArg)
         case IncludeDir(String)
         case SuppressWarning
         case TreatWarningAsError
@@ -97,7 +97,7 @@ public final class CLProgram {
         var string: String {
             switch self {
             case .CLVersion(let clVersion): return "-cl-std=\(clVersion)"
-            case .D_NAME(let value): return value != nil ? "name=\(value!)" : "-D"
+            case .D(let arg, let values): return String(format: "-D\(arg)", values)
             case .IncludeDir(let dir): return "-I \(dir)"
             case .SuppressWarning: return "-w"
             case .TreatWarningAsError: return "-Werror"

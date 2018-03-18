@@ -29,6 +29,8 @@ private let bufferError: (cl_int) -> NSError = { type in
         message = "there is a failure to allocate resources required by the OpenCL implementation on the device"
     case CL_OUT_OF_HOST_MEMORY:
         message = "there is a failure to allocate resources required by the OpenCL implementation on the host"
+    case CL_INVALID_OPERATION:
+        message = "images are not support by any associated with context"
     default:
         message = "Unknown Error"
     }
@@ -105,7 +107,32 @@ public class CLKernelData {
     let context: CLContext
     let memFlags: CLMemFlags
     var mem: cl_mem?
-    var data: UnsafeRawPointer?
+    private var _data: UnsafeRawPointer?
+    var data: UnsafeRawPointer? {
+        set(newValue) {
+            _data = newValue
+        }
+        get {
+            if _data != nil {
+                return _data
+            }
+            var actualSize = 0
+            let type = cl_mem_info(CL_MEM_HOST_PTR)
+            let code = clGetMemObjectInfo(mem,
+                                          type,
+                                          Int.max,
+                                          nil,
+                                          &actualSize)
+            guard code == CL_SUCCESS, actualSize > 0 else { return nil }
+            let rawPtr = UnsafeMutableRawPointer.allocate(byteCount: actualSize,
+                                                          alignment: MemoryLayout<UInt8>.alignment)
+            defer {
+                rawPtr.deallocate()
+            }
+            clGetMemObjectInfo(mem, type, actualSize, rawPtr, nil)
+            return  UnsafeRawPointer(rawPtr)
+        }
+    }
     var size: size_t? {
         return try? integerValue(type: CL_MEM_SIZE)
     }
@@ -193,10 +220,56 @@ public final class CLKernelBuffer: CLKernelData {
     }
 }
 
+public final class CLSampler {
+    public enum CLAddressingMode: Int32, CLInfoProtocol {
+        typealias valueType = cl_addressing_mode
+        case REPEAT, CLAMP_TO_EDGE, CLAMP, NONE, MIRRORED_REPEAT
+        public init?(rawValue: Int32) {
+            switch rawValue {
+            case CL_ADDRESS_REPEAT: self = .REPEAT
+            case CL_ADDRESS_CLAMP_TO_EDGE: self = .CLAMP_TO_EDGE
+            case CL_ADDRESS_CLAMP: self = .CLAMP
+            case CL_ADDRESS_NONE: self = .NONE
+            case CL_ADDRESS_MIRRORED_REPEAT: self = .MIRRORED_REPEAT
+            default: return nil
+            }
+        }
+        var value: cl_addressing_mode {
+            return cl_addressing_mode(rawValue)
+        }
+    }
+    public enum CLFilteringMode: Int32, CLInfoProtocol {
+        typealias valueType = cl_filter_mode
+        case nearest, linear
+        public init?(rawValue: Int32) {
+            switch rawValue {
+            case CL_FILTER_NEAREST: self = .nearest
+            case CL_FILTER_LINEAR: self = .linear
+            default: return nil
+            }
+        }
+        var value: cl_filter_mode {
+            return cl_filter_mode(rawValue)
+        }
+    }
+    internal let sampler: cl_sampler
+    init(context: CLContext,
+         normalizedCoords isNorm: Bool,
+         addressingMode: CLAddressingMode,
+         filteringMode: CLFilteringMode) throws {
+        var errCode: cl_int = 0
+        self.sampler = clCreateSampler(context.context, cl_bool(isNorm ? CL_TRUE : CL_FALSE),
+                                       addressingMode.value, filteringMode.value, &errCode)
+        guard errCode == CL_SUCCESS else {
+            throw bufferError(errCode)
+        }
+    }
+}
+
 public final class CLKernelImageBuffer: CLKernelData {
     struct CLImageFormat {
         enum CLChannelOrder {
-            case RGB, RGBA, ARGB, BGRA, RG, RA, R, A, RGBx, Rx, RGx, Intensity
+            case RGB, RGBA, ARGB, BGRA, RG, RA, R, A, RGBx, Rx, RGx, Intensity, Luminance, DepthStenCil
             var value: cl_channel_order {
                 switch self {
                 case .RGB: return cl_channel_order(CL_RGB)
@@ -211,6 +284,8 @@ public final class CLKernelImageBuffer: CLKernelData {
                 case .Rx: return cl_channel_order(CL_Rx)
                 case .RGx: return cl_channel_order(CL_RGx)
                 case .Intensity: return cl_channel_order(CL_INTENSITY)
+                case .Luminance: return cl_channel_order(CL_LUMINANCE)
+                case .DepthStenCil: return cl_channel_order(CL_DEPTH_STENCIL)
                 }
             }
             init?(_ type: cl_channel_order) {
@@ -227,6 +302,8 @@ public final class CLKernelImageBuffer: CLKernelData {
                 case cl_channel_order(CL_Rx): self = .Rx
                 case cl_channel_order(CL_RGx): self = .RGx
                 case cl_channel_order(CL_INTENSITY): self = .Intensity
+                case cl_channel_order(CL_LUMINANCE): self = .Luminance
+                case cl_channel_order(CL_DEPTH_STENCIL): self = .DepthStenCil
                 default: return nil
                 }
             }
@@ -291,7 +368,7 @@ public final class CLKernelImageBuffer: CLKernelData {
                                           image_channel_data_type: format.value)
         }
     }
-    struct CLImageDesc {
+    public struct CLImageDesc {
         enum CLMemObjectType {
             case Image1D, Image1DBuffer, Image1DArray, Image2D, Image2DArray, Image3D
             var value: cl_mem_object_type {
@@ -387,7 +464,7 @@ public final class CLKernelImageBuffer: CLKernelData {
              arraySize: size_t = 0,
              rowPitch: size_t = 0,
              slicePitch: size_t = 0,
-             buffer: CLKernelData? = nil) throws {
+             buffer: CLKernelData? = nil) {
             desc = cl_image_desc(image_type: type.value,
                                  image_width: width,
                                  image_height: height,
@@ -403,9 +480,10 @@ public final class CLKernelImageBuffer: CLKernelData {
     }
     private(set) var format: CLImageFormat?
     private(set) var desc: CLImageDesc?
-    var elementSize: size_t? { return try? integerValue(type: CL_IMAGE_ELEMENT_SIZE) }
-    var rowPitch: Int? { return desc?.rowPitch }
-    var slicePitch: Int? { return desc?.slicePitch }
+    public var elementSize: size_t? { return try? integerValue(type: CL_IMAGE_ELEMENT_SIZE) }
+    public var rowPitch: Int? { return desc?.rowPitch }
+    public var slicePitch: Int? { return desc?.slicePitch }
+    private(set) var flags: CLMemFlags?
     init(context: CLContext,
          flags: CLMemFlags,
          desc: CLImageDesc,
@@ -415,6 +493,7 @@ public final class CLKernelImageBuffer: CLKernelData {
         var errCode: cl_int = 0
         self.format = format
         self.desc = desc
+        self.flags = flags
         let vec = UnsafeMutableRawPointer.allocate(byteCount: size,
                                                    alignment: MemoryLayout.alignment(ofValue: data))
         let mem = clCreateImage(context.context,
@@ -423,7 +502,23 @@ public final class CLKernelImageBuffer: CLKernelData {
                                 &self.desc!.desc,
                                 memcpy(vec, data, size),
                                 &errCode)
+        guard errCode == CL_SUCCESS else { throw bufferError(errCode) }
         super.init(flags, mem, context, vec)
+    }
+    convenience init(context ctx: CLContext,
+         flags: CLMemFlags,
+         format: CLImageFormat,
+         image path: String) throws {
+        guard let image = NSImage(contentsOfFile: path),
+            let data = image.tiffRepresentation,
+            let rep = NSBitmapImageRep(data: data) else {
+                throw NSError(domain: "com.daubert.OpenCL.Buffer",
+                               code: -1007,
+                               userInfo: [NSLocalizedDescriptionKey: "图像信息不存在"])
+        }
+        let desc = CLImageDesc(type: .Image2D, width: rep.pixelsWide, height: rep.pixelsHigh, depth: 1)
+        try self.init(context: ctx, flags: flags, desc: desc, format: format,
+                      size:  image.tiffRepresentation?.count ?? 0, data: rep.bitmapData)
     }
     
     required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeRawPointer?) {

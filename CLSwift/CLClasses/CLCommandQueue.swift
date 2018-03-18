@@ -43,6 +43,22 @@ private let commandQueueError: (cl_int) -> NSError = { type in
         message = "src_buffer is a sub-buffer object and offset specified when the sub-buffer object is created is not aligned to CL_DEVICE_MEM_BASE_ADDR_ALIGN value for device associated with queue"
     case CL_MEM_COPY_OVERLAP:
         message = "if src_buffer and dst_buffer are the same buffer or subbuffer object and the source and destination regions overlap or if src_buffer and dst_buffer are different sub-buffers of the same associated buffer object and they overlap. The regions overlap if src_offset ≤ dst_offset ≤ src_offset + size - 1, or if dst_offset ≤ src_offset ≤ dst_offset + size - 1"
+    case CL_MISALIGNED_SUB_BUFFER_OFFSET:
+        message = " sub-buffer object is specified as the value for an argument that is a buffer object and the offset specified when the sub-buffer object is created is not aligned to CL_DEVICE_MEM_BASE_ADDR_ALIGN value for device associated with queue"
+    case CL_INVALID_IMAGE_SIZE:
+        message = "if an image object is specified as an argument value and the image dimensions (image width, height, specified or compute row and/or slice pitch) are not supported by device associated with queue"
+    case CL_IMAGE_FORMAT_NOT_SUPPORTED:
+        message = "an image object is specified as an argument value and the image format (image channel order and data type) is not supported by device associated with queue"
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+        message = "there is a failure to allocate memory for data store associated with image or buffer objects specified as arguments to kernel"
+    case CL_INVALID_WORK_GROUP_SIZE:
+        message = " local_work_size is NULL and the __attribute__ ((reqd_work_group_size(X, Y, Z))) qualifier is used to declare the work-group size for kernel in the program source"
+    case CL_INVALID_WORK_DIMENSION:
+        message = "work_dim is not a valid value"
+    case CL_INVALID_GLOBAL_WORK_SIZE:
+        message = "global_work_size is NULL, or if any of the values specified in global_work_size[0], ...global_work_size [work_dim - 1] are 0 or exceed the range given by the sizeof(size_t) for the device on which the kernel execution will be enqueued"
+    case CL_INVALID_GLOBAL_OFFSET:
+        message = "the value specified in global_work_size + the corresponding values in global_work_offset for any dimensions is greater than the sizeof(size_t) for the device on which the kernel execution will be enqueued"
     default:
         message = "Unknown Error"
     }
@@ -95,8 +111,16 @@ public final class CLCommandQueue {
         }
     }
 
-    func divideData() {
-
+    @discardableResult
+    func enqueueNDRangeKernel(kernel: CLKernel, workDim: UInt32,
+                              globalWorkOffset: [size_t]?, globalWorkSize: [size_t]?, localWorkSize: [size_t]?,
+                              awaitEvents: [cl_event?]? = nil) throws -> cl_event? {
+        var event: cl_event?
+        let code = clEnqueueNDRangeKernel(queue, kernel.kernel, workDim, globalWorkOffset, globalWorkSize, localWorkSize, cl_uint(awaitEvents?.count ?? 0), awaitEvents, &event)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        return event
     }
 
     @discardableResult
