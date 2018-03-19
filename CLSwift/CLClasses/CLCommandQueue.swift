@@ -91,6 +91,75 @@ public final class CLCommandQueue {
                 return rawValue
             }
         }
+        public enum CLCommandType: Int32, CLInfoProtocol {
+            typealias valueType = cl_command_type
+            case ndrangeKernel, nativeKernel
+            case readBuffer, writeBuffer, copyBuffer
+            case readImage, writeImage, copyImage
+            case copyBufferToImage, copyImageToBuffer
+            case mapBuffer, unmapMemObject
+            case marker, acquireGLObjects, releaseCLObjects
+            case readBufferRect, writeBufferRect, copyBufferRect
+            case user, barrier, migrateMemObjects, fillBuffer, fillImage
+           // case svmFree, svmMemCopy, svmMemFill, smvmMap, svmUnMap
+            public init?(rawValue: Int32) {
+                switch rawValue {
+                case CL_COMMAND_NDRANGE_KERNEL: self = .ndrangeKernel
+                case CL_COMMAND_NATIVE_KERNEL: self = .nativeKernel
+                case CL_COMMAND_READ_BUFFER: self = .readBuffer
+                case CL_COMMAND_WRITE_BUFFER: self = .writeBuffer
+                case CL_COMMAND_COPY_BUFFER: self = .copyBuffer
+                case CL_COMMAND_READ_IMAGE: self = .readImage
+                case CL_COMMAND_WRITE_IMAGE: self = .writeImage
+                case CL_COMMAND_COPY_IMAGE: self = .copyImage
+                case CL_COMMAND_COPY_BUFFER_TO_IMAGE: self = .copyBufferToImage
+                case CL_COMMAND_COPY_IMAGE_TO_BUFFER: self = .copyImageToBuffer
+                case CL_COMMAND_MAP_BUFFER: self = .mapBuffer
+                case CL_COMMAND_UNMAP_MEM_OBJECT: self = .unmapMemObject
+                case CL_COMMAND_MARKER: self = .marker
+                case CL_COMMAND_ACQUIRE_GL_OBJECTS: self = .acquireGLObjects
+                case CL_COMMAND_RELEASE_GL_OBJECTS: self = .releaseCLObjects
+                case CL_COMMAND_READ_BUFFER_RECT: self = .readBufferRect
+                case CL_COMMAND_WRITE_BUFFER_RECT: self = .writeBufferRect
+                case CL_COMMAND_COPY_BUFFER_RECT: self = .copyBufferRect
+                case CL_COMMAND_USER: self = .user
+                case CL_COMMAND_BARRIER: self = .barrier
+                case CL_COMMAND_MIGRATE_MEM_OBJECTS: self = .migrateMemObjects
+                case CL_COMMAND_FILL_IMAGE: self = .fillImage
+                case CL_COMMAND_FILL_BUFFER: self = .fillBuffer
+                default: return nil
+                }
+            }
+            var value: cl_command_type {
+                var raw: Int32 = 0
+                switch self {
+                case .ndrangeKernel: raw = CL_COMMAND_NDRANGE_KERNEL
+                case .nativeKernel: raw = CL_COMMAND_NATIVE_KERNEL
+                case .readBuffer: raw = CL_COMMAND_READ_BUFFER
+                case .writeBuffer: raw = CL_COMMAND_WRITE_BUFFER
+                case .copyBuffer: raw = CL_COMMAND_COPY_BUFFER
+                case .readImage: raw = CL_COMMAND_READ_IMAGE
+                case .writeImage: raw = CL_COMMAND_WRITE_IMAGE
+                case .copyImage: raw =  CL_COMMAND_COPY_IMAGE
+                case .copyBufferToImage: raw = CL_COMMAND_COPY_BUFFER_TO_IMAGE
+                case .copyImageToBuffer: raw = CL_COMMAND_COPY_IMAGE_TO_BUFFER
+                case .mapBuffer: raw = CL_COMMAND_MAP_BUFFER
+                case .unmapMemObject: raw = CL_COMMAND_UNMAP_MEM_OBJECT
+                case .marker: raw = CL_COMMAND_MARKER
+                case .acquireGLObjects: raw = CL_COMMAND_ACQUIRE_GL_OBJECTS
+                case .releaseCLObjects: raw = CL_COMMAND_RELEASE_GL_OBJECTS
+                case .readBufferRect: raw = CL_COMMAND_READ_BUFFER_RECT
+                case .writeBufferRect: raw = CL_COMMAND_WRITE_BUFFER_RECT
+                case .copyBufferRect: raw = CL_COMMAND_COPY_BUFFER_RECT
+                case .user: raw = CL_COMMAND_USER
+                case .barrier: raw = CL_COMMAND_BARRIER
+                case .migrateMemObjects: raw = CL_COMMAND_MIGRATE_MEM_OBJECTS
+                case .fillImage: raw = CL_COMMAND_FILL_IMAGE
+                case .fillBuffer: raw = CL_COMMAND_FILL_BUFFER
+                }
+                return cl_command_type(raw)
+            }
+        }
         var status: CLCommandExecutionStatus? {
             let type = cl_event_info(CL_EVENT_COMMAND_EXECUTION_STATUS)
             var value: cl_int = 0
@@ -99,8 +168,20 @@ public final class CLCommandQueue {
             }
             return CLCommandExecutionStatus(rawValue: value)
         }
-        init(_ event: cl_event) {
+        var referenceCount: UInt32? {
+            let type = cl_event_info(CL_EVENT_REFERENCE_COUNT)
+            var value: cl_uint = 0
+            guard clGetEventInfo(event, type, MemoryLayout<cl_uint>.size, &value, nil) == CL_SUCCESS else {
+                return nil
+            }
+            return value
+        }
+        private(set) var context: CLContext?
+        private(set) var queue: CLCommandQueue?
+        init(_ event: cl_event, context: CLContext? = nil, queue: CLCommandQueue? = nil) {
             self.event = event
+            self.context = context
+            self.queue = queue
         }
     }
 
@@ -185,7 +266,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil, nil); return }
                     result = clEnqueueMapBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), flags.value,
                                                     offset, buffer.size ?? 0, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event, &errCode)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self) : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent, result)
                 }
@@ -201,7 +282,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil, nil); return }
                     result = clEnqueueMapImage(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), flags.value, origin.originArray,
                                                    region.regionArray, rowPitch, slicePitch, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event, &errCode)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent, result)
                 }
@@ -235,7 +316,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueCopyBuffer(strongSelf.queue, buffer.mem, distMem.mem, srcOffset, dstOffset, buffer.size ?? 0,
                                                cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -249,7 +330,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), offset, size,
                                                 host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -263,7 +344,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadBuffer(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), offset, readingSize ?? MemoryLayout.size(ofValue: host),
                                                host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -280,7 +361,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadImage(strongSelf.queue, data.mem, cl_bool(CL_FALSE), originArray, regionArray,
                                               slicePitch, rowPitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -295,7 +376,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteImage(strongSelf.queue, data.mem, cl_bool(CL_FALSE), origin.originArray, region.regionArray,
                                                rowPitch, slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self) : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -322,7 +403,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueReadBufferRect(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                    bufferSize.rowPitch, bufferSize.slicePitch, hostSize.rowPitch, hostSize.slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }
@@ -336,7 +417,7 @@ public final class CLCommandQueue {
                     guard let strongSelf = self else { cb(false, nil , nil); return }
                     code = clEnqueueWriteBufferRect(strongSelf.queue, buffer.mem, cl_bool(CL_FALSE), bufferOrigin.originArray, hostOrigin.originArray, region.regionArray,
                                                     bufferSize.rowPitch, bufferSize.slicePitch, hostSize.rowPitch, hostSize.slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
-                    let clEvent = event != nil ? CLEvent(event!) : nil
+                    let clEvent = event != nil ? CLEvent(event!, context: strongSelf.context, queue: self)  : nil
                     while clEvent != nil, clEvent?.status == .running {}
                     cb(code == CL_SUCCESS, code == CL_SUCCESS ? nil : commandQueueError(code!), clEvent)
                 }

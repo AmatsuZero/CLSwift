@@ -238,7 +238,15 @@ public final class CLSampler {
             }
         }
         var value: cl_addressing_mode {
-            return cl_addressing_mode(rawValue)
+            var raw: cl_int = 0
+            switch self {
+            case .REPEAT: raw = CL_ADDRESS_REPEAT
+            case .CLAMP_TO_EDGE: raw = CL_ADDRESS_CLAMP_TO_EDGE
+            case .CLAMP: raw = CL_ADDRESS_CLAMP
+            case .NONE: raw = CL_ADDRESS_NONE
+            case .MIRRORED_REPEAT: raw = CL_ADDRESS_MIRRORED_REPEAT
+            }
+            return cl_addressing_mode(raw)
         }
     }
     public enum CLFilteringMode: Int32, CLInfoProtocol {
@@ -252,7 +260,12 @@ public final class CLSampler {
             }
         }
         var value: cl_filter_mode {
-            return cl_filter_mode(rawValue)
+            var raw: Int32 = 0
+            switch self {
+            case .linear: raw = CL_FILTER_LINEAR
+            case .nearest: raw = CL_FILTER_NEAREST
+            }
+            return cl_filter_mode(raw)
         }
     }
     internal let sampler: cl_sampler

@@ -62,7 +62,13 @@ public final class CLDevice {
             }
         }
         var value: cl_device_mem_cache_type {
-            return cl_device_mem_cache_type(rawValue)
+            var raw: cl_int = 0
+            switch self {
+            case .READ: raw = CL_READ_ONLY_CACHE
+            case .READWRITE: raw = CL_READ_WRITE_CACHE
+            case .NONE: raw = CL_NONE
+            }
+            return cl_device_mem_cache_type(raw)
         }
     }
 
