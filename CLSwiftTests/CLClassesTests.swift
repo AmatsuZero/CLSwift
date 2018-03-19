@@ -170,17 +170,20 @@ class CLClassesTests: XCTestCase {
         guard let path = testBundle.path(forResource: "input", ofType: "png") else {
             return XCTFail("图片不存在！")
         }
-        let format = CLKernelImageBuffer.CLImageFormat(order: .Luminance,
-                                                       format: .UInt16)
+        let format = CLKernelImageBuffer.CLImageFormat(order: .RGBA,
+                                                       format: .UInt8)
         guard let inputMem = try? CLKernelImageBuffer(context: context,
                                                       flags: [.READ, .COPYHOSTPR],
                                                       format: format,
                                                       image: path) else {
                                                         return XCTFail("未能创建图像对象")
         }
+        var desc = inputMem.desc!
+        desc.imageWidth *= 3
+        desc.imageHeight *= 3
         guard let outputMem = try? CLKernelImageBuffer(context: context, flags: [.WRITE],
-                                                       desc: inputMem.desc!,
-                                                       format: format, size: inputMem.size!, data: nil) else {
+                                                       desc: desc,
+                                                       format: format, size: 0, data: nil) else {
                                                         return XCTFail("未能创建写入对象")
         }
         XCTAssert((try? kernel.setArgument(at: 0, value: inputMem)) == true, "设置参数0失败")
@@ -188,7 +191,6 @@ class CLClassesTests: XCTestCase {
         guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
             return XCTFail("未能创建空值队列")
         }
-
         let globalSize = [inputMem.desc!.imageWidth, inputMem.desc!.imageHeight, 0]
         do {
          try queue.enqueueNDRangeKernel(kernel: kernel, workDim: 2, globalWorkOffset: nil,
@@ -197,19 +199,21 @@ class CLClassesTests: XCTestCase {
             XCTFail(e.localizedDescription)
         }
         let origin = CLKernelData.CLBufferOrigin(x: 0, y: 0, z: 0)
-        let region = CLKernelData.CLBufferRegion(width: 3*inputMem.desc!.imageWidth,
-                                                   height: 3*inputMem.desc!.imageHeight,
+        let region = CLKernelData.CLBufferRegion(width: desc.imageWidth,
+                                                   height: desc.imageHeight,
                                                    depth: 1)
         let command = CLCommandQueue.CLCommandBufferOperation.ReadImage(origin, region, 0, 0)
-        guard var imgData = inputMem.data else {
+        guard let imgData = inputMem.data else {
             return XCTFail("未能获取图像源")
         }
         let host = UnsafeMutableRawPointer(mutating: imgData)
-        defer {
-            host.deallocate()
+        let expectation = XCTestExpectation(description: "读取图像信息")
+        queue.enqueueBuffer(buffer: outputMem, operation: command, host: host) { isSuccess, error, _ in
+            XCTAssert(isSuccess, error?.localizedDescription ?? "读取图像失败")
+            expectation.fulfill()
         }
-        XCTAssert(queue.enqueueBuffer(buffer: outputMem, operation: command, host: host), "添加Read Buffer失败")
-        XCTAssertNotNil(outputMem.data, "没有读取到数据")
+        print("Σ(⊙▽⊙")
+        wait(for: [expectation], timeout: 100)
     }
 }
 

@@ -31,6 +31,8 @@ private let bufferError: (cl_int) -> NSError = { type in
         message = "there is a failure to allocate resources required by the OpenCL implementation on the host"
     case CL_INVALID_OPERATION:
         message = "images are not support by any associated with context"
+    case CL_IMAGE_FORMAT_NOT_SUPPORTED:
+        message = "the image_format is not supported."
     default:
         message = "Unknown Error"
     }
@@ -130,7 +132,8 @@ public class CLKernelData {
                 rawPtr.deallocate()
             }
             clGetMemObjectInfo(mem, type, actualSize, rawPtr, nil)
-            return  UnsafeRawPointer(rawPtr)
+            _data = UnsafeRawPointer(rawPtr)
+            return _data
         }
     }
     var size: size_t? {
@@ -174,7 +177,7 @@ public class CLKernelData {
     }
 
     deinit {
-        data?.deallocate()
+        _data?.deallocate()
         clReleaseMemObject(mem)
     }
 }
@@ -269,7 +272,7 @@ public final class CLSampler {
 public final class CLKernelImageBuffer: CLKernelData {
     struct CLImageFormat {
         enum CLChannelOrder {
-            case RGB, RGBA, ARGB, BGRA, RG, RA, R, A, RGBx, Rx, RGx, Intensity, Luminance, DepthStenCil
+            case RGB, RGBA, ARGB, BGRA, RG, RA, R, A, RGBx, Rx, RGx, Intensity, Luminance, DepthStenCil, DEPTH
             var value: cl_channel_order {
                 switch self {
                 case .RGB: return cl_channel_order(CL_RGB)
@@ -286,6 +289,7 @@ public final class CLKernelImageBuffer: CLKernelData {
                 case .Intensity: return cl_channel_order(CL_INTENSITY)
                 case .Luminance: return cl_channel_order(CL_LUMINANCE)
                 case .DepthStenCil: return cl_channel_order(CL_DEPTH_STENCIL)
+                case .DEPTH: return cl_channel_order(CL_DEPTH)
                 }
             }
             init?(_ type: cl_channel_order) {
@@ -304,6 +308,7 @@ public final class CLKernelImageBuffer: CLKernelData {
                 case cl_channel_order(CL_INTENSITY): self = .Intensity
                 case cl_channel_order(CL_LUMINANCE): self = .Luminance
                 case cl_channel_order(CL_DEPTH_STENCIL): self = .DepthStenCil
+                case cl_channel_order(CL_DEPTH): self = .DEPTH
                 default: return nil
                 }
             }
@@ -366,6 +371,9 @@ public final class CLKernelImageBuffer: CLKernelData {
         init(order: CLChannelOrder, format: CLChannelType) {
             self.format = cl_image_format(image_channel_order: order.value,
                                           image_channel_data_type: format.value)
+        }
+        init(format: cl_image_format) {
+            self.format = format
         }
     }
     public struct CLImageDesc {
@@ -484,6 +492,11 @@ public final class CLKernelImageBuffer: CLKernelData {
     public var rowPitch: Int? { return desc?.rowPitch }
     public var slicePitch: Int? { return desc?.slicePitch }
     private(set) var flags: CLMemFlags?
+    var supportedImageFormats: [CLImageFormat]?
+    override var size: size_t? {
+        return MemoryLayout.size(ofValue: mem)
+    }
+
     init(context: CLContext,
          flags: CLMemFlags,
          desc: CLImageDesc,
@@ -494,27 +507,43 @@ public final class CLKernelImageBuffer: CLKernelData {
         self.format = format
         self.desc = desc
         self.flags = flags
-        let vec = UnsafeMutableRawPointer.allocate(byteCount: size,
-                                                   alignment: MemoryLayout.alignment(ofValue: data))
+        var count: cl_uint = 0
+        guard clGetSupportedImageFormats(context.context, flags.value, desc.type.value, UInt32.max, nil, &count) == CL_SUCCESS else {
+            throw bufferError(-10)
+        }
+        let formats = UnsafeMutablePointer<cl_image_format>.allocate(capacity: Int(count)*MemoryLayout<cl_image_format>.size)
+        defer {
+            formats.deallocate()
+        }
+        clGetSupportedImageFormats(context.context, flags.value, desc.type.value, count, formats, nil)
+        let buffer = UnsafeBufferPointer<cl_image_format>(start: formats, count: Int(count))
+        supportedImageFormats = Array(buffer).map { CLImageFormat(format: $0) }
+        guard supportedImageFormats?.contains(where: {
+            $0.format.image_channel_order == format.format.image_channel_order
+                && $0.format.image_channel_data_type == format.format.image_channel_data_type }) == true else {
+            throw bufferError(-10)
+        }
+        let vec = data != nil ? UnsafeMutableRawPointer.allocate(byteCount: size,
+                                                                 alignment: MemoryLayout.alignment(ofValue: data)) : nil
         let mem = clCreateImage(context.context,
                                 flags.value,
                                 &self.format!.format,
                                 &self.desc!.desc,
-                                memcpy(vec, data, size),
+                                vec != nil ? memcpy(vec, data, size) : nil,
                                 &errCode)
         guard errCode == CL_SUCCESS else { throw bufferError(errCode) }
         super.init(flags, mem, context, vec)
     }
     convenience init(context ctx: CLContext,
-         flags: CLMemFlags,
-         format: CLImageFormat,
-         image path: String) throws {
+                     flags: CLMemFlags,
+                     format: CLImageFormat,
+                     image path: String) throws {
         guard let image = NSImage(contentsOfFile: path),
             let data = image.tiffRepresentation,
             let rep = NSBitmapImageRep(data: data) else {
                 throw NSError(domain: "com.daubert.OpenCL.Buffer",
-                               code: -1007,
-                               userInfo: [NSLocalizedDescriptionKey: "图像信息不存在"])
+                              code: -1007,
+                              userInfo: [NSLocalizedDescriptionKey: "图像信息不存在"])
         }
         let desc = CLImageDesc(type: .Image2D, width: rep.pixelsWide, height: rep.pixelsHigh, depth: 1)
         try self.init(context: ctx, flags: flags, desc: desc, format: format,

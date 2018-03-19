@@ -73,4 +73,10 @@ class SortTest: XCTestCase {
         }
         print(arr)
     }
+
+    func testFind() {
+        let str1 = "你好世界，欢迎使用OpenCL"
+        let str2 = "Open"
+        print("location: \(str1.find(str2))")
+    }
 }
