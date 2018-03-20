@@ -79,4 +79,23 @@ class SortTest: XCTestCase {
         let str2 = "Open"
         print("location: \(str1.find(str2))")
     }
+
+    func testAVLTree() {
+        let testData = [3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48]
+        var tree = AVLTree(testData)
+        tree.remove(data: 50)
+        tree.append(20)
+        print(tree)
+    }
+
+    func testHashableObject() {
+        var arr = [HashableObject]()
+        for _ in 0...100 {
+            let obj = HashableObject()
+            arr.append(obj)
+        }
+        arr.forEach { obj in
+            print(obj.hashKey)
+        }
+    }
 }

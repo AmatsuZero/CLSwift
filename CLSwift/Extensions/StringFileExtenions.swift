@@ -16,11 +16,11 @@ public extension String {
                 (String(data: data,
                         encoding: .utf8)! as NSString).utf8String)
     }
-
     func find(_ text: String) -> [Int] {
         guard text.count <= self.count else {// 要查找的子串长度大于字符串长度，比较没有了意义……
             return []
         }
+        // 字符串子串前缀与后缀最大公共长度
         let getNext: (String) -> [Int] = { txt -> [Int] in
             var arr = [Int](repeating: 0, count: txt.count+1)
             //0和1的值肯定是0
