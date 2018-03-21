@@ -47,13 +47,27 @@ class CLClassesTests: XCTestCase {
         XCTAssertNotNil(device.name, "没有获得设备名称")
     }
 
-    func testContext() {
-        guard let ctx = try? CLContext(deviceType: .GPU) else {
-            return XCTFail("未能创建上下文")
+    func testAsyncBuild() {
+        let files = ["/Users/modao/Downloads/source_code_mac/Ch3/map_copy/blank.cl"]
+        guard var (bufferSize, buffer) = try? files.kernelFileBuffer() else {
+            XCTFail("未能获取信息")
+            return
         }
-        let device = ctx.devices?.first!
-        XCTAssertNotNil(device, "未能获得设备")
-        XCTAssertNotNil(device?.name, "未能获取名称")
+        guard let program = try? CLProgram(context: context, buffers: &buffer, sizes: &bufferSize) else {
+            return XCTFail("未能创建Program")
+        }
+        let expectation = XCTestExpectation(description: "异步编译")
+        if program.build(devices: devices, callback: { (program, infos) in
+            if infos?.first?.status == .SUCCESS {
+                expectation.fulfill()
+            } else if infos?.first?.status == .ERROR {
+                XCTFail("异步编译失败")
+                expectation.fulfill()
+            }
+        }) {
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 100)
     }
 
     func testMapCopy() {
@@ -210,9 +224,17 @@ class CLClassesTests: XCTestCase {
         let expectation = XCTestExpectation(description: "读取图像信息")
         queue.enqueueBuffer(buffer: outputMem, operation: command, host: host) { isSuccess, error, _ in
             XCTAssert(isSuccess, error?.localizedDescription ?? "读取图像失败")
+            let count = inputMem.size ?? 0 / MemoryLayout<UInt8>.size
+            let buffer = UnsafeBufferPointer(start: host.assumingMemoryBound(to: UInt8.self), count: count)
+            var imgBuffer = Array(buffer)
+            if let ref = imgBuffer.convertToCGmage(desc: desc) {
+                let image = NSImage.init(cgImage: ref,
+                                         size: NSSize(width: CGFloat(desc.imageWidth),
+                                                                    height: CGFloat(desc.imageHeight)))
+                print(image)
+            }
             expectation.fulfill()
         }
-        print("Σ(⊙▽⊙")
         wait(for: [expectation], timeout: 100)
     }
 }

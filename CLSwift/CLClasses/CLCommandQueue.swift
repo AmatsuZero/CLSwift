@@ -8,7 +8,7 @@
 
 import Foundation
 
-private let commandQueueError: (cl_int) -> NSError = { type in
+let commandQueueError: (cl_int) -> NSError = { type in
     var message = ""
     switch type {
     case CL_INVALID_PROGRAM_EXECUTABLE:
@@ -72,118 +72,6 @@ public final class CLCommandQueue {
     internal let context: CLContext
     internal let device: CLDevice
     internal let queue: cl_command_queue
-
-    public class CLEvent {
-        let event: cl_event
-        public enum CLCommandExecutionStatus: Int32, CLInfoProtocol {
-            typealias valueType = cl_int
-            case queued, submitted, running, complete
-            public init?(rawValue: Int32) {
-                switch rawValue {
-                case CL_QUEUED: self = .queued
-                case CL_SUBMITTED: self = .submitted
-                case CL_RUNNING: self = .running
-                case CL_COMPLETE: self = .complete
-                default: return nil
-                }
-            }
-            var value: cl_int {
-                return rawValue
-            }
-        }
-        public enum CLCommandType: Int32, CLInfoProtocol {
-            typealias valueType = cl_command_type
-            case ndrangeKernel, nativeKernel
-            case readBuffer, writeBuffer, copyBuffer
-            case readImage, writeImage, copyImage
-            case copyBufferToImage, copyImageToBuffer
-            case mapBuffer, unmapMemObject
-            case marker, acquireGLObjects, releaseCLObjects
-            case readBufferRect, writeBufferRect, copyBufferRect
-            case user, barrier, migrateMemObjects, fillBuffer, fillImage
-           // case svmFree, svmMemCopy, svmMemFill, smvmMap, svmUnMap
-            public init?(rawValue: Int32) {
-                switch rawValue {
-                case CL_COMMAND_NDRANGE_KERNEL: self = .ndrangeKernel
-                case CL_COMMAND_NATIVE_KERNEL: self = .nativeKernel
-                case CL_COMMAND_READ_BUFFER: self = .readBuffer
-                case CL_COMMAND_WRITE_BUFFER: self = .writeBuffer
-                case CL_COMMAND_COPY_BUFFER: self = .copyBuffer
-                case CL_COMMAND_READ_IMAGE: self = .readImage
-                case CL_COMMAND_WRITE_IMAGE: self = .writeImage
-                case CL_COMMAND_COPY_IMAGE: self = .copyImage
-                case CL_COMMAND_COPY_BUFFER_TO_IMAGE: self = .copyBufferToImage
-                case CL_COMMAND_COPY_IMAGE_TO_BUFFER: self = .copyImageToBuffer
-                case CL_COMMAND_MAP_BUFFER: self = .mapBuffer
-                case CL_COMMAND_UNMAP_MEM_OBJECT: self = .unmapMemObject
-                case CL_COMMAND_MARKER: self = .marker
-                case CL_COMMAND_ACQUIRE_GL_OBJECTS: self = .acquireGLObjects
-                case CL_COMMAND_RELEASE_GL_OBJECTS: self = .releaseCLObjects
-                case CL_COMMAND_READ_BUFFER_RECT: self = .readBufferRect
-                case CL_COMMAND_WRITE_BUFFER_RECT: self = .writeBufferRect
-                case CL_COMMAND_COPY_BUFFER_RECT: self = .copyBufferRect
-                case CL_COMMAND_USER: self = .user
-                case CL_COMMAND_BARRIER: self = .barrier
-                case CL_COMMAND_MIGRATE_MEM_OBJECTS: self = .migrateMemObjects
-                case CL_COMMAND_FILL_IMAGE: self = .fillImage
-                case CL_COMMAND_FILL_BUFFER: self = .fillBuffer
-                default: return nil
-                }
-            }
-            var value: cl_command_type {
-                var raw: Int32 = 0
-                switch self {
-                case .ndrangeKernel: raw = CL_COMMAND_NDRANGE_KERNEL
-                case .nativeKernel: raw = CL_COMMAND_NATIVE_KERNEL
-                case .readBuffer: raw = CL_COMMAND_READ_BUFFER
-                case .writeBuffer: raw = CL_COMMAND_WRITE_BUFFER
-                case .copyBuffer: raw = CL_COMMAND_COPY_BUFFER
-                case .readImage: raw = CL_COMMAND_READ_IMAGE
-                case .writeImage: raw = CL_COMMAND_WRITE_IMAGE
-                case .copyImage: raw =  CL_COMMAND_COPY_IMAGE
-                case .copyBufferToImage: raw = CL_COMMAND_COPY_BUFFER_TO_IMAGE
-                case .copyImageToBuffer: raw = CL_COMMAND_COPY_IMAGE_TO_BUFFER
-                case .mapBuffer: raw = CL_COMMAND_MAP_BUFFER
-                case .unmapMemObject: raw = CL_COMMAND_UNMAP_MEM_OBJECT
-                case .marker: raw = CL_COMMAND_MARKER
-                case .acquireGLObjects: raw = CL_COMMAND_ACQUIRE_GL_OBJECTS
-                case .releaseCLObjects: raw = CL_COMMAND_RELEASE_GL_OBJECTS
-                case .readBufferRect: raw = CL_COMMAND_READ_BUFFER_RECT
-                case .writeBufferRect: raw = CL_COMMAND_WRITE_BUFFER_RECT
-                case .copyBufferRect: raw = CL_COMMAND_COPY_BUFFER_RECT
-                case .user: raw = CL_COMMAND_USER
-                case .barrier: raw = CL_COMMAND_BARRIER
-                case .migrateMemObjects: raw = CL_COMMAND_MIGRATE_MEM_OBJECTS
-                case .fillImage: raw = CL_COMMAND_FILL_IMAGE
-                case .fillBuffer: raw = CL_COMMAND_FILL_BUFFER
-                }
-                return cl_command_type(raw)
-            }
-        }
-        var status: CLCommandExecutionStatus? {
-            let type = cl_event_info(CL_EVENT_COMMAND_EXECUTION_STATUS)
-            var value: cl_int = 0
-            guard clGetEventInfo(event, type, MemoryLayout<cl_int>.size, &value, nil) == CL_SUCCESS else {
-                return nil
-            }
-            return CLCommandExecutionStatus(rawValue: value)
-        }
-        var referenceCount: UInt32? {
-            let type = cl_event_info(CL_EVENT_REFERENCE_COUNT)
-            var value: cl_uint = 0
-            guard clGetEventInfo(event, type, MemoryLayout<cl_uint>.size, &value, nil) == CL_SUCCESS else {
-                return nil
-            }
-            return value
-        }
-        private(set) var context: CLContext?
-        private(set) var queue: CLCommandQueue?
-        init(_ event: cl_event, context: CLContext? = nil, queue: CLCommandQueue? = nil) {
-            self.event = event
-            self.context = context
-            self.queue = queue
-        }
-    }
 
     public enum CLCommandProperties {
         case ProfileEnable, OutOfOrder
@@ -300,7 +188,6 @@ public final class CLCommandQueue {
         return result
     }
 
-    //FIXME: ReadRect会失败
     @discardableResult
     func enqueueBuffer(buffer: CLKernelData,
                        operation: CLCommandBufferOperation,

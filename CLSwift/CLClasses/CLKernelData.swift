@@ -560,7 +560,7 @@ public final class CLKernelImageBuffer: CLKernelData {
         }
         let desc = CLImageDesc(type: .Image2D, width: rep.pixelsWide, height: rep.pixelsHigh, depth: 1)
         try self.init(context: ctx, flags: flags, desc: desc, format: format,
-                      size:  image.tiffRepresentation?.count ?? 0, data: rep.bitmapData)
+                      size: data.count, data: rep.bitmapData)
     }
     
     required public init(_ flags:CLMemFlags, _ memObj: cl_mem?, _ context: CLContext, _ ptr: UnsafeRawPointer?) {

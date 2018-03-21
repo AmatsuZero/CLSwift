@@ -74,10 +74,17 @@ class SortTest: XCTestCase {
         print(arr)
     }
 
+    func sd(_ prt: UnsafeMutableRawPointer) {
+        let p = prt.assumingMemoryBound(to: [String: Any].self).pointee
+        print(p["v"])
+    }
+
     func testFind() {
-        let str1 = "你好世界，欢迎使用OpenCL"
-        let str2 = "Open"
-        print("location: \(str1.find(str2))")
+        var source: [String: Any] = [
+            "s": "sss",
+            "v": [1,2,3,54,54354,3]
+        ]
+        sd(&source)
     }
 
     func testAVLTree() {

@@ -44,10 +44,24 @@ internal let programError: (cl_int) -> NSError? = { errType -> NSError? in
                    userInfo: [NSLocalizedFailureReasonErrorKey: message])
 }
 
+private func programBuildCallback(program: cl_program?, userData: UnsafeMutableRawPointer?) {
+    let target = CLProgram.eventPool.pool.first { (_, pro) -> Bool in
+        return program == pro.program
+    }?.value
+    var buildInfo: [CLProgram.CLBuildInfo]?
+    if let dict = userData?.assumingMemoryBound(to: [String:Any].self).pointee,
+        let devices = dict["devices"] as? [CLDevice],
+        let pro = program {
+        buildInfo = devices.map { CLProgram.CLBuildInfo(program: pro, device: $0.deviceId) }
+    }
+    target?.buildCallback?(target, buildInfo)
+}
+
 public final class CLProgram {
 
+    internal static let eventPool = CLEventPool<CLProgram>(lable: "com.daubert.CLSwift.CLProgram")
     internal let program: cl_program
-    public typealias CLBuildProgramCallBack = (Bool, Error?, [String: Any]?, [CLBuildInfo]?) -> Void
+    public typealias CLBuildProgramCallBack = (CLProgram?, [CLBuildInfo]?) -> Void
     /// CL文件编译选项
     ///
     /// - CLVersion: 告诉编译器所使用的OpenCL版本
@@ -191,6 +205,7 @@ public final class CLProgram {
             }
         }
     }
+    private var id: Int = 0
     /// 从cl文件创建Program对象
     ///
     /// - Parameters:
@@ -209,42 +224,31 @@ public final class CLProgram {
         guard errorCode == CL_SUCCESS else {
             throw programError(errorCode)!
         }
+        id = CLProgram.eventPool.append(event: self)
     }
-
+    internal var buildCallback: CLBuildProgramCallBack?
     @discardableResult
     func build(options: Set<CLProgramBuildOption>? = nil,
                devices: [CLDevice]? = nil,
-               userData: [String: Any]? = nil,
                callback: CLBuildProgramCallBack? = nil) -> Bool {
         let optionsString = options?.isEmpty == false
             ? options!.map { $0.string }.reduce("") { $0.appending("\($1) ") }
             : nil
-        if let cb = callback {
-            DispatchQueue.global().async { [weak self] in
-                guard let strongSelf = self else { return }
-                let code = clBuildProgram(strongSelf.program,
-                                          cl_uint(devices?.count ?? 0),
-                                          devices == nil ? nil : devices?.map { $0.deviceId },
-                                          optionsString,
-                                          nil,
-                                          nil)
-                cb(code == CL_SUCCESS,
-                   programError(code),
-                   userData,
-                   devices?.map { CLBuildInfo(program: strongSelf.program, device: $0.deviceId) })
-            }
-            return false
-        } else {
-            return clBuildProgram(program,
-                                  cl_uint(devices?.count ?? 0),
-                                  devices == nil ? nil : devices?.map { $0.deviceId },
-                                  optionsString,
-                                  nil,
-                                  nil) == CL_SUCCESS
-        }
+        buildCallback = callback
+        var userData: [String: Any] = [
+            "devices": devices ?? [],
+            "count": devices?.count ?? 0
+        ]
+        return clBuildProgram(program,
+                              cl_uint(devices?.count ?? 0),
+                              devices == nil ? nil : devices?.map { $0.deviceId },
+                              optionsString,
+                              callback == nil ? nil: programBuildCallback,
+                              &userData) == CL_SUCCESS
     }
 
     deinit {
+        CLProgram.eventPool.remove(id: id)
         clReleaseProgram(program)
     }
 }
