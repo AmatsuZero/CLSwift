@@ -261,7 +261,7 @@ class CLClassesTests: XCTestCase {
             return XCTFail("未能创建Data Buffer")
         }
         XCTAssert((try? kernel.setArgument(at: 0, value: dataBuffer)) == true, "设置参数失败")
-        guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
+        guard let queue = try? CLCommandQueue(context: context, device: devices.first!) else {
             return XCTFail("未能创建队列")
         }
         let kernelEvent = try! queue.enqueueTask(kernel: kernel)

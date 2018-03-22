@@ -59,6 +59,12 @@ let commandQueueError: (cl_int) -> NSError = { type in
         message = "global_work_size is NULL, or if any of the values specified in global_work_size[0], ...global_work_size [work_dim - 1] are 0 or exceed the range given by the sizeof(size_t) for the device on which the kernel execution will be enqueued"
     case CL_INVALID_GLOBAL_OFFSET:
         message = "the value specified in global_work_size + the corresponding values in global_work_offset for any dimensions is greater than the sizeof(size_t) for the device on which the kernel execution will be enqueued"
+    case CL_INVALID_EVENT:
+        message = "event is not a valid user event."
+    case CL_INVALID_OPERATION:
+        message = "the operation is not defined"
+    case CL_PROFILING_INFO_NOT_AVAILABLE:
+        message = "the CL_QUEUE_PROFILING_ENABLE flag is not set for the command-queue, if the execution status of the command identified by event is not CL_COMPLETE or if event refers to the clEnqueueSVMFree command or is a user event object"
     default:
         message = "Unknown Error"
     }
@@ -98,13 +104,16 @@ public final class CLCommandQueue {
         case UnmapBuffer(UnsafeMutableRawPointer)
     }
 
-    init(context: CLContext, device: CLDevice, properties: CLCommandProperties) throws {
+    let properties: CLCommandProperties?
+
+    init(context: CLContext, device: CLDevice, properties: CLCommandProperties? = nil) throws {
         self.context = context
         self.device = device
+        self.properties = properties
         var errorCode: cl_int = 0
         queue = clCreateCommandQueue(context.context,
                                      device.deviceId,
-                                     properties.value,
+                                     properties?.value ?? 0,
                                      &errorCode)
         guard errorCode == CL_SUCCESS else {
             throw commandQueueError(errorCode)
@@ -193,7 +202,7 @@ public final class CLCommandQueue {
                        operation: CLCommandBufferOperation,
                        host: UnsafeMutableRawPointer? = nil,
                        eventsAwait: [CLEvent?]? = nil,
-                       callBack: ((Bool, Error?, CLEvent?) -> Void)? = nil) -> (isSuccess: Bool, event: CLEvent?) {
+                       callBack: ((Bool, Error?, CLEvent?) -> Void)? = nil) -> CLEvent.EventQuery {
         var event: cl_event?
         var code: cl_int?
         switch operation {

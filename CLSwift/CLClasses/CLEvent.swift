@@ -59,7 +59,7 @@ final class CLEventPool<T> {
 }
 
 //MARK: - 事件
-public class CLEvent {
+public final class CLEvent {
     public enum CLCommandExecutionStatus: Int32, CLInfoProtocol {
         typealias valueType = cl_int
         case queued, submitted, running, complete
@@ -177,22 +177,60 @@ public class CLEvent {
     }
     private(set) var context: CLContext?
     private(set) var queue: CLCommandQueue?
-    let event: cl_event?
+    internal private(set) var event: cl_event?
     var id: Int = 0
 
-    //事件回调
-    var runningBlock: eventCallback?
-    var completeBlock: eventCallback?
-    var queuedBlock: eventCallback?
-    var submittedBlock: eventCallback?
-
+    //MARK: - 事件回调
+    internal var runningBlock: eventCallback?
+    internal var completeBlock: eventCallback?
+    internal var queuedBlock: eventCallback?
+    internal var submittedBlock: eventCallback?
     internal static let eventPool = CLEventPool<CLEvent>(lable: "com.daubert.CLSwift.CLEvent")
+    typealias EventQuery = (isSuccess: Bool, event: CLEvent?)
+    //是否是用户创建的事件
+    let isUserEvent: Bool
+    //MARK: - Profiling Info（单位纳秒）
+    var queuedProfiling: UInt64? {
+        return try? longValue(type: CL_PROFILING_COMMAND_QUEUED)
+    }
+    var submitProfiling: UInt64? {
+        return try? longValue(type: CL_PROFILING_COMMAND_SUBMIT)
+    }
+    var startProfiling: UInt64? {
+        return try? longValue(type: CL_PROFILING_COMMAND_START)
+    }
+    var endProfiling: UInt64? {
+        return try? longValue(type: CL_PROFILING_COMMAND_END)
+    }
 
     init(_ event: cl_event?, context: CLContext? = nil, queue: CLCommandQueue? = nil) {
         self.event = event
         self.context = context
         self.queue = queue
+        isUserEvent = false
         id = CLEvent.eventPool.append(event: self)
+    }
+
+    init(context: CLContext) throws {
+        self.context = context
+        queue = nil
+        var err: cl_int = 0
+        event = clCreateUserEvent(context.context, &err)
+        isUserEvent = true
+        guard err == CL_SUCCESS else {
+            throw commandQueueError(err)
+        }
+        id = CLEvent.eventPool.append(event: self)
+    }
+
+    func setStatus(isOnComplete: Bool) throws {
+        guard isUserEvent else {
+            return
+        }
+        let code = clSetUserEventStatus(event, isOnComplete ? CL_COMPLETE : -1)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
     }
 
     func setCallback(type: CLCommandExecutionStatus, userData: inout [String:Any]?, callback: @escaping eventCallback) throws {
@@ -208,7 +246,80 @@ public class CLEvent {
         }
     }
 
+    @discardableResult
+    func setMarker(on queue: CLCommandQueue) throws -> EventQuery {
+        var ref: cl_event?
+        let code = clEnqueueMarkerWithWaitList(queue.queue, 1, [event], &ref)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        self.queue = queue
+        return (true, CLEvent(ref, context: context, queue: queue))
+    }
+
+    @discardableResult
+    func setBarrier(on queue: CLCommandQueue) throws -> EventQuery {
+        var ref: cl_event?
+        let code = clEnqueueBarrierWithWaitList(queue.queue, 1, [event], &ref)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        self.queue = queue
+        return (true, CLEvent(ref, context: context, queue: queue))
+    }
+
+    @discardableResult
+    class func enqueue<C: Collection>(events: C, on queue: CLCommandQueue) throws -> EventQuery where C.Iterator.Element == CLEvent {
+        var ref: cl_event?
+        let evts = events.map { $0.event }
+        let code = clEnqueueMarkerWithWaitList(queue.queue, cl_uint(evts.count), evts, &ref)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        events.forEach { ev in
+            ev.queue = queue
+        }
+        return (true, CLEvent(ref, context: queue.context, queue: queue))
+    }
+
+    @discardableResult
+    class func enqueue<C: Collection>(barriers: C, on queue: CLCommandQueue) throws -> EventQuery where C.Iterator.Element == CLEvent {
+        var ref: cl_event?
+        let evts = barriers.map { $0.event }
+        let code = clEnqueueBarrierWithWaitList(queue.queue, cl_uint(evts.count), evts, &ref)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        barriers.forEach { ev in
+            ev.queue = queue
+        }
+        return (true, CLEvent(ref, context: queue.context, queue: queue))
+    }
+
+    private func longValue(type: Int32) throws -> cl_ulong {
+        var value: cl_ulong = 0
+        let code = clGetEventProfilingInfo(event, cl_profiling_info(type), MemoryLayout<cl_ulong>.size, &value, nil)
+        guard code == CL_SUCCESS else {
+            throw commandQueueError(code)
+        }
+        return value
+    }
+
     deinit {
         CLEvent.eventPool.remove(id: id)
+        clReleaseEvent(event)
+    }
+}
+
+extension Collection where Element == CLEvent {
+
+    @discardableResult
+    func enqueue(on queue: CLCommandQueue) throws -> CLEvent.EventQuery {
+        return try CLEvent.enqueue(events: self, on: queue)
+    }
+
+    @discardableResult
+    func block(on queue: CLCommandQueue) throws -> CLEvent.EventQuery {
+        return try CLEvent.enqueue(barriers: self, on: queue)
     }
 }

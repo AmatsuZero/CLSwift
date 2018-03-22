@@ -51,7 +51,6 @@ protocol CLInfoProtocol {
 }
 
 extension Array where Element == UInt8 {
-
     mutating func convertToCGmage(desc: CLKernelImageBuffer.CLImageDesc) -> CGImage? {
         let bytesPerPixel = 1
         let bytesPerRow = bytesPerPixel * desc.imageWidth
@@ -83,5 +82,12 @@ extension Array where Element == UInt8 {
             return imageRef
         })
         return imageRef
+    }
+}
+
+extension UInt64 {
+    /// 纳秒转秒
+    var seconds: TimeInterval {
+        return Double(self)/1000000000.0
     }
 }

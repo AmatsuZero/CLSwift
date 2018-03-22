@@ -173,6 +173,15 @@ public final class CLDevice {
     public private(set) lazy var isImageSupport: Bool? = {
         return try? integerValue(CL_DEVICE_IMAGE_SUPPORT) == CL_TRUE
     }()
+    /// （性能分析用）定时器计数变化的耗时结果
+    public private(set) lazy var timeResolution: Int? = {
+        var value: size_t = 0
+        guard clGetDeviceInfo(deviceId, cl_device_info(CL_DEVICE_PROFILING_TIMER_RESOLUTION),
+                              MemoryLayout<size_t>.size, &value, nil) == CL_SUCCESS else {
+            return nil
+        }
+        return value
+    }()
     public struct CLDeviceType: OptionSet, CLInfoProtocol {
         public let rawValue: Int32
         public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)

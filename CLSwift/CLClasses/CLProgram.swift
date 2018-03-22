@@ -130,14 +130,13 @@ public final class CLProgram {
         }
     }
 
-    public struct CLBuildInfo {
+    public class CLBuildInfo {
         private let program: cl_program
         private let device: cl_device_id?
         public var status: CLBuildStatus? {
             let code = try? integerValue(CL_PROGRAM_BUILD_STATUS)
             return CLBuildStatus(rawValue: code ?? -1)
         }
-
         public var binaryType: CLBinaryType? {
             let code = try? integerValue(CL_PROGRAM_BINARY_TYPE)
             return CLBinaryType(rawValue: code ?? -1)
