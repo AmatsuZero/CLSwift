@@ -73,7 +73,12 @@ public class CLEvent {
             }
         }
         var value: cl_int {
-            return rawValue
+            switch self {
+            case .queued: return CL_QUEUED
+            case .submitted: return CL_SUBMITTED
+            case .running: return CL_RUNNING
+            case .complete: return CL_COMPLETE
+            }
         }
     }
     public enum CLCommandType: Int32, CLInfoProtocol {
@@ -172,7 +177,7 @@ public class CLEvent {
     }
     private(set) var context: CLContext?
     private(set) var queue: CLCommandQueue?
-    let event: cl_event
+    let event: cl_event?
     var id: Int = 0
 
     //事件回调
@@ -183,7 +188,7 @@ public class CLEvent {
 
     internal static let eventPool = CLEventPool<CLEvent>(lable: "com.daubert.CLSwift.CLEvent")
 
-    init(_ event: cl_event, context: CLContext? = nil, queue: CLCommandQueue? = nil) {
+    init(_ event: cl_event?, context: CLContext? = nil, queue: CLCommandQueue? = nil) {
         self.event = event
         self.context = context
         self.queue = queue

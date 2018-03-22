@@ -193,7 +193,7 @@ public final class CLCommandQueue {
                        operation: CLCommandBufferOperation,
                        host: UnsafeMutableRawPointer? = nil,
                        eventsAwait: [CLEvent?]? = nil,
-                       callBack: ((Bool, Error?, CLEvent?) -> Void)? = nil) -> Bool {
+                       callBack: ((Bool, Error?, CLEvent?) -> Void)? = nil) -> (isSuccess: Bool, event: CLEvent?) {
         var event: cl_event?
         var code: cl_int?
         switch operation {
@@ -240,7 +240,7 @@ public final class CLCommandQueue {
                                            host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
             }
         case .ReadImage(let origin, let region, let rowPitch, let slicePitch):
-            guard let data = buffer as? CLKernelImageBuffer else { return false }
+            guard let data = buffer as? CLKernelImageBuffer else { return (false, nil) }
             let originArray = [origin.x, origin.y, origin.z]
             let regionArray = [region.width, region.height, region.depth]
             if let cb = callBack {
@@ -257,7 +257,7 @@ public final class CLCommandQueue {
                                           slicePitch, rowPitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
             }
         case .WriteImage(let origin, let region, let rowPitch, let slicePitch):
-            guard let data = buffer as? CLKernelImageBuffer else { return false }
+            guard let data = buffer as? CLKernelImageBuffer else { return (false, nil) }
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil); return }
@@ -272,7 +272,7 @@ public final class CLCommandQueue {
                                            rowPitch, slicePitch, host, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
             }
         case .CopyImage(let distImage,let srcOrigin, let distOrigin, let region):
-            guard let data = buffer as? CLKernelImageBuffer else { return false }
+            guard let data = buffer as? CLKernelImageBuffer else { return (false, nil) }
             if let cb = callBack {
                 DispatchQueue.global().async { [weak self] in
                     guard let strongSelf = self else { cb(false, nil , nil); return }
@@ -335,9 +335,9 @@ public final class CLCommandQueue {
                 code = clEnqueueUnmapMemObject(queue, buffer.mem, returnHost, cl_uint(eventsAwait?.count ?? 0), eventsAwait?.map { $0?.event }, &event)
             }
         default:
-            return false
+            return (false, nil)
         }
-        return code == CL_SUCCESS
+        return (code == CL_SUCCESS, CLEvent(event, context: context, queue: self))
     }
 
     deinit {

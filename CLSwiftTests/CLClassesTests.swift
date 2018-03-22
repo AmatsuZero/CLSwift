@@ -110,7 +110,7 @@ class CLClassesTests: XCTestCase {
             XCTFail(e.localizedDescription)
         }
         let copyCommand = CLCommandQueue.CLCommandBufferOperation.CopyBuffer(bufferTwo, 0, 0)
-        XCTAssert(queue.enqueueBuffer(buffer: bufferOne, operation: copyCommand), "拷贝内存失败")
+        XCTAssert(queue.enqueueBuffer(buffer: bufferOne, operation: copyCommand).isSuccess, "拷贝内存失败")
 
         let mapCommand = CLCommandQueue.CLCommandBufferOperation.MapBuffer(0, [.READ])
         guard let mappedMemory = try? queue.mapBuffer(buffer: bufferTwo, operation: mapCommand) else {
@@ -119,7 +119,7 @@ class CLClassesTests: XCTestCase {
         memcpy(&resultArray, mappedMemory, size)
         var returnedValue = [Float]()
         let unmap = CLCommandQueue.CLCommandBufferOperation.UnmapBuffer(&returnedValue)
-        XCTAssert(queue.enqueueBuffer(buffer: bufferTwo, operation: unmap), "取消映射失败")
+        XCTAssert(queue.enqueueBuffer(buffer: bufferTwo, operation: unmap).isSuccess, "取消映射失败")
         for i in 0..<10 {
             for j in 0..<10 {
                 print(resultArray[j+i*10])
@@ -160,7 +160,7 @@ class CLClassesTests: XCTestCase {
             XCTFail(e.localizedDescription)
         }
         let read = CLCommandQueue.CLCommandBufferOperation.ReadBuffer(0, size)
-        XCTAssert(queue.enqueueBuffer(buffer: msgBuffer, operation: read, host: &msg), "添加Read Buffer失败")
+        XCTAssert(queue.enqueueBuffer(buffer: msgBuffer, operation: read, host: &msg).isSuccess, "添加Read Buffer失败")
         print(String(cString: msg))
     }
 
@@ -236,6 +236,55 @@ class CLClassesTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 100)
+    }
+
+    func testCallback() {
+        let files = ["/Users/modao/Downloads/source_code_gnu/Ch7/callback/callback.cl"]
+        guard var (bufferSize, buffer) = try? files.kernelFileBuffer() else {
+            XCTFail("未能获取信息")
+            return
+        }
+        guard let program = try? CLProgram(context: context, buffers: &buffer, sizes: &bufferSize) else {
+            return XCTFail("未能创建Program")
+        }
+        XCTAssert(program.build(), "编译失败")
+        guard let kernel = try? CLKernel(name: "callback", program: program) else {
+            return XCTFail("未能创建内核")
+        }
+        XCTAssertNotNil(kernel.argInfo, "未能获取参数信息")
+        var data = [Float](repeating: 0, count: 4096)
+        let size = MemoryLayout<Float>.size*data.count
+        guard let dataBuffer = try? CLKernelBuffer(context: context,
+                                                   flags: [.WRITE],
+                                                   size: size,
+                                                   hostBuffer: nil) else {
+            return XCTFail("未能创建Data Buffer")
+        }
+        XCTAssert((try? kernel.setArgument(at: 0, value: dataBuffer)) == true, "设置参数失败")
+        guard let queue = try? CLCommandQueue(context: context, device: devices.first!, properties: .ProfileEnable) else {
+            return XCTFail("未能创建队列")
+        }
+        let kernelEvent = try! queue.enqueueTask(kernel: kernel)
+        let command = CLCommandQueue.CLCommandBufferOperation.ReadBuffer(0, size)
+        let (isSuccess, readEvent) = queue.enqueueBuffer(buffer: dataBuffer, operation: command, host: &data)
+        XCTAssert(isSuccess, "读取失败")
+        let kernelExpectation = XCTestExpectation(description: "回调一")
+        let readExpectiation = XCTestExpectation(description: "回调二")
+        var ud:[String: Any]? = ["message": "The kernel finished successfully.\n\0"]
+        do {
+            try kernelEvent?.setCallback(type: .complete, userData: &ud, callback: { (_, _, data) in
+                print(data ?? "")
+                kernelExpectation.fulfill()
+            })
+            ud?["check"] = data
+            try readEvent?.setCallback(type: .complete, userData: &ud, callback: { (_, _, data) in
+                print(data ?? "")
+                readExpectiation.fulfill()
+            })
+        } catch(let e) {
+            XCTFail(e.localizedDescription)
+        }
+        wait(for: [kernelExpectation, readExpectiation], timeout: 100)
     }
 }
 

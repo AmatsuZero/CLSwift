@@ -74,17 +74,13 @@ class SortTest: XCTestCase {
         print(arr)
     }
 
-    func sd(_ prt: UnsafeMutableRawPointer) {
-        let p = prt.assumingMemoryBound(to: [String: Any].self).pointee
-        print(p["v"])
-    }
 
     func testFind() {
-        var source: [String: Any] = [
-            "s": "sss",
-            "v": [1,2,3,54,54354,3]
-        ]
-        sd(&source)
+        var singleLinkList = SingleDirectionLinkList([3, 44, 38, 5, 47, 15, 36, 26, 27, 2, 46, 4, 19, 50, 48])
+        singleLinkList[12] = 17
+        singleLinkList.forEach { element in
+            print(element ?? "Empty")
+        }
     }
 
     func testAVLTree() {
