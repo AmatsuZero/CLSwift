@@ -72,6 +72,14 @@ public final class CLContext {
             return _devices
         }
     }
+
+    var workGroupSize: [Int]? {
+        return _devices?.map { Int($0.maxWorkGroupCount ?? 0) }
+    }
+
+    var computeSize: [Int]? {
+        return _devices?.map { Int($0.maxComputeUnits ?? 0)  }
+    }
     
     public init(contextProperties props: [cl_context_properties]? = nil,
                 devices: [CLDevice],

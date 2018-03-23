@@ -9,9 +9,8 @@
 import Foundation
 
 public final class CLOrganizer {
-    
-    private let platform_ids: [cl_platform_id?]
 
+    private let platform_ids: [cl_platform_id?]
     public lazy var platforms: [CLPlatform] = {
         return platform_ids
                 .map {
@@ -34,4 +33,18 @@ public final class CLOrganizer {
         platform_ids = platforms
     }
 
+    class func simpleOrganizer() throws -> CLContext? {
+        let organizer = try CLOrganizer(num_entries: 1)
+        guard let platform = organizer.platforms.first else {
+            return nil
+        }
+        var devices = try platform.devices(types: .GPU)
+        if devices.isEmpty == true {
+            devices = try platform.devices(types: .CPU)
+        }
+        guard !devices.isEmpty else {
+            return nil
+        }
+        return try CLContext(devices: devices)
+    }
 }

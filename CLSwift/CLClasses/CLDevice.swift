@@ -182,6 +182,14 @@ public final class CLDevice {
         }
         return value
     }()
+    /// 最大并行计算单元数
+    public private(set) lazy var maxComputeUnits: UInt32? = {
+        return try? integerValue(CL_DEVICE_MAX_COMPUTE_UNITS)
+    }()
+    /// 最大工作组数
+    public private(set) lazy var maxWorkGroupCount: UInt32? = {
+        return try? integerValue(CL_DEVICE_MAX_WORK_GROUP_SIZE)
+    }()
     public struct CLDeviceType: OptionSet, CLInfoProtocol {
         public let rawValue: Int32
         public static let CPU = CLDeviceType(rawValue: CL_DEVICE_TYPE_CPU)

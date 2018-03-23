@@ -286,5 +286,18 @@ class CLClassesTests: XCTestCase {
         }
         wait(for: [kernelExpectation, readExpectiation], timeout: 100)
     }
+
+    func testGrep() {
+        guard let path = testBundle.path(forResource: "kafka", ofType: "txt") else {
+            return XCTFail("未能找到文件")
+        }
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+            return XCTFail("未能读取Data")
+        }
+        guard let ret = try? data.grep(patterns: ["that", "with", "have", "from"]) else {
+            return XCTFail("执行失败")
+        }
+        print(ret ?? "Empty")
+    }
 }
 

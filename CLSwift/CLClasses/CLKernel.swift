@@ -180,10 +180,15 @@ public final class CLKernel {
 
     @discardableResult
     func setArgument(at index: UInt32, value: CLKernelData) throws -> Bool {
+        return try setArgument(at: index, size: MemoryLayout.size(ofValue: value.mem), data: &value.mem)
+    }
+
+    @discardableResult
+    func setArgument(at index: UInt32, size: Int, data: UnsafeRawPointer?) throws -> Bool {
         let code = clSetKernelArg(kernel,
                                   index,
-                                  MemoryLayout.size(ofValue: value.mem),
-                                  &value.mem)
+                                  size,
+                                  data)
         guard code == CL_SUCCESS else {
             throw kernelError(code)
         }
