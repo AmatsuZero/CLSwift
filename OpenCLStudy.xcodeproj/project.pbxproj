@@ -21,6 +21,8 @@
 		215E32302063A02F002C0C3D /* Grep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215E322F2063A02F002C0C3D /* Grep.swift */; };
 		215E32332063A1F3002C0C3D /* GraphType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215E32322063A1F3002C0C3D /* GraphType.swift */; };
 		215E32352063A39D002C0C3D /* GraphAdjacencyList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215E32342063A39D002C0C3D /* GraphAdjacencyList.swift */; };
+		215E32372064B55B002C0C3D /* NaiveBayes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215E32362064B55B002C0C3D /* NaiveBayes.swift */; };
+		215E32392064DDAE002C0C3D /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215E32382064DDAE002C0C3D /* Functions.swift */; };
 		2177FFDC205B969C00057232 /* Sort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215CF20420551A140031CAE3 /* Sort.swift */; };
 		2177FFE2205E106F00057232 /* input.png in Resources */ = {isa = PBXBuildFile; fileRef = 2177FFE1205E106F00057232 /* input.png */; };
 		218634952045710300257E34 /* CLSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2186348C2045710300257E34 /* CLSwift.framework */; };
@@ -67,6 +69,8 @@
 		215E322F2063A02F002C0C3D /* Grep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grep.swift; sourceTree = "<group>"; };
 		215E32322063A1F3002C0C3D /* GraphType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphType.swift; sourceTree = "<group>"; };
 		215E32342063A39D002C0C3D /* GraphAdjacencyList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphAdjacencyList.swift; sourceTree = "<group>"; };
+		215E32362064B55B002C0C3D /* NaiveBayes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NaiveBayes.swift; sourceTree = "<group>"; };
+		215E32382064DDAE002C0C3D /* Functions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Functions.swift; sourceTree = "<group>"; };
 		2177FFE1205E106F00057232 /* input.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = input.png; sourceTree = "<group>"; };
 		2177FFE5205F747000057232 /* LinkListProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkListProtocol.swift; sourceTree = "<group>"; };
 		2186345520450D8B00257E34 /* CLDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLDevice.swift; sourceTree = "<group>"; };
@@ -212,6 +216,7 @@
 				218634992045710300257E34 /* CLClassesTests.swift */,
 				215CF20620551A320031CAE3 /* SortTest.swift */,
 				2198632920611FB30013F1D6 /* HashTable.swift */,
+				215E32382064DDAE002C0C3D /* Functions.swift */,
 				2186349B2045710300257E34 /* Info.plist */,
 			);
 			path = CLSwiftTests;
@@ -224,6 +229,7 @@
 				211A882C2046CF3A00591C08 /* StringFileExtenions.swift */,
 				2198632C2061532D0013F1D6 /* Trigonometric.swift */,
 				215E322F2063A02F002C0C3D /* Grep.swift */,
+				215E32362064B55B002C0C3D /* NaiveBayes.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -364,6 +370,7 @@
 				218634C12045960300257E34 /* CLDevice.swift in Sources */,
 				218905A92049544600352104 /* CLKernel.swift in Sources */,
 				218634C22045960300257E34 /* CLPlatform.swift in Sources */,
+				215E32372064B55B002C0C3D /* NaiveBayes.swift in Sources */,
 				211A882D2046CF3A00591C08 /* StringFileExtenions.swift in Sources */,
 				215E32302063A02F002C0C3D /* Grep.swift in Sources */,
 				218634C32045960300257E34 /* CLContext.swift in Sources */,
@@ -390,6 +397,7 @@
 				2177FFDC205B969C00057232 /* Sort.swift in Sources */,
 				210FEE4F2060BD1400D206B8 /* AVLTree.swift in Sources */,
 				215E32352063A39D002C0C3D /* GraphAdjacencyList.swift in Sources */,
+				215E32392064DDAE002C0C3D /* Functions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
