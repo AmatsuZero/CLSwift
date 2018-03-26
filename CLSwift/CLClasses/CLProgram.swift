@@ -238,12 +238,13 @@ public final class CLProgram {
             "devices": devices ?? [],
             "count": devices?.count ?? 0
         ]
-        return clBuildProgram(program,
-                              cl_uint(devices?.count ?? 0),
-                              devices == nil ? nil : devices?.map { $0.deviceId },
-                              optionsString,
-                              callback == nil ? nil: programBuildCallback,
-                              &userData) == CL_SUCCESS
+        let code = clBuildProgram(program,
+                                  cl_uint(devices?.count ?? 0),
+                                  devices == nil ? nil : devices?.map { $0.deviceId },
+                                  optionsString,
+                                  callback == nil ? nil: programBuildCallback,
+                                  &userData)
+        return code == CL_SUCCESS
     }
 
     deinit {

@@ -107,7 +107,9 @@ extension Data {
         try kernel.setArgument(at: 2, size: MemoryLayout.size(ofValue: charsPerItem), data: &charsPerItem)
         try kernel.setArgument(at: 3, size: resultSize, data: nil)
         try kernel.setArgument(at: 4, value: resultBuffer)
+
         let queue = try CLCommandQueue(context: context, device: device)
+        try queue.enqueueTask(kernel: kernel)
         try queue.enqueueNDRangeKernel(kernel: kernel, workDim: 1, globalWorkOffset: [0],
                                        globalWorkSize: [globalSize], localWorkSize: [localSize])
         let readCommand = CLCommandQueue.CLCommandBufferOperation.ReadBuffer(0, resultSize)

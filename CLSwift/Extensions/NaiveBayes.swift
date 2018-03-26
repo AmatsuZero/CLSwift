@@ -9,7 +9,7 @@
 import Foundation
 
 public class NaiveBayes {
-    /// initialize our vocabulary and its size
+    /// initialize our vocabulary
     private(set) var vocalbulary = Set<String>()
     /// number of documents we have learned from
     private(set) var totalDocuments = 0

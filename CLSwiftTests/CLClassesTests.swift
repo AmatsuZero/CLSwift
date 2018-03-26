@@ -299,5 +299,20 @@ class CLClassesTests: XCTestCase {
         }
         print(ret ?? "Empty")
     }
+
+    func testRadixSort() {
+        var test = [UInt8](repeating: 0, count: 8)
+        for i in 0..<test.count {
+            var value: UInt8 = UInt8(i)
+            arc4random_buf(&value, MemoryLayout<UInt8>.size)
+            test[i] = value % UInt8(test.count-i)
+        }
+        do {
+            try test.radixSort()
+        } catch (let e) {
+            print(e.localizedDescription)
+        }
+        print(test)
+    }
 }
 
